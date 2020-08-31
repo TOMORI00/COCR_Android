@@ -22,7 +22,6 @@ public class MainActivity extends AppCompatActivity {
         detector.setIOUThresh(0.5f);
         detector.initialize(getAssets());
         Bitmap image = Utils.readBitmapFromAssets(getAssets(), "testcase/1a0h.jpg");
-        detector.getRecognition(image);
         long start = System.currentTimeMillis();
         Log.d(TAG, "start @" + start);
         List<Recognition> objects = detector.getRecognition(image);
