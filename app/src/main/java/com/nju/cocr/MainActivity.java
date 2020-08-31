@@ -16,7 +16,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void demo1() {
         DetectorInterface detector = Detector.getInstance();
-        detector.setThreadNum(2);
+        detector.setThreadNum(4);
         detector.enableNNAPI(true);
         detector.setConfThresh(0.5f);
         detector.setIOUThresh(0.5f);

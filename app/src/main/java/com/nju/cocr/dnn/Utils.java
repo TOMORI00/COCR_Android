@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.nju.cocr.dnn.Config.*;
@@ -23,7 +25,58 @@ public class Utils {
      * @return List<List < PointF>> 缩放后的笔迹
      */
     static public List<List<PointF>> normalizeScript(List<List<PointF>> script) {
-        // TODO: 平移、比例变换
+        float whiteSpaceX = 10, whiteSpaceY = 10;
+        float targetWidth = SIZE_FIXED_INPUT - whiteSpaceX;
+        float targetHeight = SIZE_FIXED_INPUT - whiteSpaceY;
+        float minx, miny, maxx, maxy,
+                minx0, miny0, maxx0, maxy0;
+        minx = miny = Float.MAX_VALUE;
+        maxx = maxy = Float.MIN_VALUE;
+        List<Float> sizeList = new ArrayList<>();
+        for (List<PointF> stroke : script) {
+            minx0 = miny0 = Float.MAX_VALUE;
+            maxx0 = maxy0 = Float.MIN_VALUE;
+            for (PointF pts : stroke) {
+                minx0 = Math.min(pts.x, minx0);
+                miny0 = Math.min(pts.y, miny0);
+                maxx0 = Math.max(pts.x, maxx0);
+                maxy0 = Math.max(pts.y, maxy0);
+            }
+            sizeList.add(maxx0 - minx0);
+            sizeList.add(maxy0 - miny0);
+            minx = Math.min(minx0, minx);
+            miny = Math.min(miny0, miny);
+            maxx = Math.max(maxx0, maxx);
+            maxy = Math.max(maxy0, maxy);
+        }
+        Collections.sort(sizeList);
+        float avgSize = 0;
+        int begin = sizeList.size() / 3, end = sizeList.size() / 3 * 2;
+        for (int i = begin; i < end; i++) {
+            avgSize += sizeList.get(i);
+        }
+        // 设置2个数的缓冲
+        avgSize = (avgSize + IDEAL_CHAR_SIZE * 2) / (end - begin + 2);
+        float k = IDEAL_CHAR_SIZE / avgSize;
+        final float currentWidth = maxx - minx;
+        final float currentHeight = maxy - miny;
+        // 缩放到理想尺度，但是不能超过画布大小
+        if (k * currentHeight > targetHeight) {
+            k = targetHeight / currentHeight;
+        }
+        if (k * currentWidth > targetWidth) {
+            k = targetWidth / currentWidth;
+        }
+        targetHeight = k * currentHeight;
+        targetWidth = k * currentWidth;
+        whiteSpaceX = (SIZE_FIXED_INPUT - targetWidth) / 2;
+        whiteSpaceY = (SIZE_FIXED_INPUT - targetHeight) / 2;
+        for (List<PointF> stroke : script) {
+            for (PointF pts : stroke) {
+                pts.x = (pts.x - minx) * k + whiteSpaceX;
+                pts.y = (pts.y - miny) * k + whiteSpaceY;
+            }
+        }
         return script;
     }
 

@@ -12,6 +12,7 @@ public class Config {
     static public final int CLASS_NUM = 11;
     static public final int LOC_PARM_NUM = 4;
     static public final int SIZE_FIXED_INPUT = 640;
+    static public final float IDEAL_CHAR_SIZE = 50;
     static public final String MODEL_FILE_NAME = "soso11-yolov4-tiny-640-fp16.tflite";
     static public final Map<Integer, String> SOSO11_LABELS = new HashMap<>();
     static public final Paint DETECTOR_PAINTER = new Paint(Paint.ANTI_ALIAS_FLAG);

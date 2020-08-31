@@ -2,6 +2,7 @@ package com.nju.cocr.dnn;
 
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
+import android.graphics.PointF;
 import android.graphics.RectF;
 import android.os.Build;
 import org.tensorflow.lite.Interpreter;
@@ -15,7 +16,7 @@ import static com.nju.cocr.dnn.Config.*;
 public class Detector implements DetectorInterface {
     Interpreter interpreter = null;
     int threadNum = 2;
-    boolean isNNAPIEnabled = true;
+    boolean isNNAPIEnabled = false;
     float iouThresh = 0.5f, confThresh = 0.5f;
 
 
@@ -138,6 +139,12 @@ public class Detector implements DetectorInterface {
     }
 
     @Override
+    public List<Recognition> getRecognition(List<List<PointF>> script) {
+        Bitmap bitmap = Utils.convertScriptToBitmap(
+                Utils.normalizeScript(script));
+        return getRecognition(bitmap);
+    }
+
     public List<Recognition> nms(List<Recognition> inputs) {
         ArrayList<Recognition> nmsList = new ArrayList<>();
 
@@ -180,7 +187,6 @@ public class Detector implements DetectorInterface {
         return nmsList;
     }
 
-    @Override
     public float iou(RectF a, RectF b) {
         return box_intersection(a, b) / box_union(a, b);
     }

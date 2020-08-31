@@ -2,7 +2,7 @@ package com.nju.cocr.dnn;
 
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.graphics.RectF;
+import android.graphics.PointF;
 
 import java.util.List;
 
@@ -54,7 +54,11 @@ public interface DetectorInterface {
      */
     List<Recognition> getRecognition(Bitmap bitmap);
 
-    List<Recognition> nms(List<Recognition> inputs);
-
-    float iou(RectF a, RectF b);
+    /**
+     * 输入任意分辨率的笔迹序列，含义：List<笔画>，笔画<=>List<PointF>
+     *
+     * @param script 笔迹序列
+     * @return
+     */
+    List<Recognition> getRecognition(List<List<PointF>> script);
 }
