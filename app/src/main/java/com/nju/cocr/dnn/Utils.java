@@ -3,6 +3,7 @@ package com.nju.cocr.dnn;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.graphics.*;
+import android.util.Log;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -18,6 +19,8 @@ import static com.nju.cocr.dnn.Config.*;
 
 
 public class Utils {
+    static final String TAG = "dnn.Utils";
+
     /**
      * 把笔迹点缩放到合适尺度
      *
@@ -25,6 +28,7 @@ public class Utils {
      * @return List<List < PointF>> 缩放后的笔迹
      */
     static public List<List<PointF>> normalizeScript(List<List<PointF>> script) {
+
         float whiteSpaceX = 10, whiteSpaceY = 10;
         float targetWidth = SIZE_FIXED_INPUT - whiteSpaceX;
         float targetHeight = SIZE_FIXED_INPUT - whiteSpaceY;
@@ -56,8 +60,9 @@ public class Utils {
             avgSize += sizeList.get(i);
         }
         // 设置2个数的缓冲
-        avgSize = (avgSize + IDEAL_CHAR_SIZE * 2) / (end - begin + 2);
+        avgSize = (avgSize + IDEAL_CHAR_SIZE * 0) / Math.min(end - begin + 0, 1);
         float k = IDEAL_CHAR_SIZE / avgSize;
+        Log.d(TAG, "k=" + k);
         final float currentWidth = maxx - minx;
         final float currentHeight = maxy - miny;
         // 缩放到理想尺度，但是不能超过画布大小

@@ -151,7 +151,7 @@ public class Detector implements DetectorInterface {
         for (int k = 0; k < CLASS_NUM; k++) {
             //1.find max confidence per class
             PriorityQueue<Recognition> pq = new PriorityQueue<Recognition>(
-                    inputs.size() / 10,
+                    200,
                     new Comparator<Recognition>() {
                         @Override
                         public int compare(final Recognition lhs, final Recognition rhs) {
