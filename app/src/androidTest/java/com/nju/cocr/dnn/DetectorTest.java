@@ -4,7 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.PointF;
 import android.util.Log;
-import androidx.test.InstrumentationRegistry;
+import androidx.test.core.app.ApplicationProvider;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +27,7 @@ public class DetectorTest {
         detector.enableNNAPI(true);
         detector.setConfThresh(0.3f);
         detector.setIOUThresh(0.3f);
-        ctx = InstrumentationRegistry.getTargetContext();
+        ctx = ApplicationProvider.getApplicationContext();
         detector.initialize(ctx.getAssets());
         nHeptane = new ArrayList<List<PointF>>() {{
             add(new ArrayList<PointF>() {{
