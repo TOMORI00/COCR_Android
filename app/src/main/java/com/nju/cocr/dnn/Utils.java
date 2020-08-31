@@ -60,7 +60,7 @@ public class Utils {
             avgSize += sizeList.get(i);
         }
         // 设置2个数的缓冲
-        avgSize = (avgSize + IDEAL_CHAR_SIZE * 0) / Math.min(end - begin + 0, 1);
+        avgSize = (avgSize + IDEAL_CHAR_SIZE * 0) / Math.max(end - begin + 0, 1);
         float k = IDEAL_CHAR_SIZE / avgSize;
         Log.d(TAG, "k=" + k);
         final float currentWidth = maxx - minx;
