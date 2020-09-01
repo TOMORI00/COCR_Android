@@ -25,6 +25,8 @@ public class MainActivity extends AppCompatActivity {
         clsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                scribbleView.clear();
+                scribbleView.invalidate();
                 Toast toast = Toast.makeText(getBaseContext(), R.string.scribble_cls, Toast.LENGTH_SHORT);
                 toast.show();
             }
