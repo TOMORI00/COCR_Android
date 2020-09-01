@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">COCR</string>
+    <string name="scribble_cls">cls</string>
+    <string name="scribble_ocr">ocr</string>
 </resources>

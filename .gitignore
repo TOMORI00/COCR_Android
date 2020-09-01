@@ -1,3 +1,10 @@
+*.project
+*.properties
+gradlew
+gradle/
+.classpath
+
+*.bat
 .vscode/
 .idea/
 # Built application files

@@ -22,7 +22,7 @@ public class Utils {
     static final String TAG = "dnn.Utils";
 
     /**
-     * 把笔迹点缩放到合适尺度
+     * 把笔迹点缩放到合适尺度。注意：script的内容会被改变！
      *
      * @param script List<List<PointF>> 原始笔迹
      * @return List<List < PointF>> 缩放后的笔迹
@@ -32,6 +32,8 @@ public class Utils {
         float whiteSpaceX = 10, whiteSpaceY = 10;
         float targetWidth = SIZE_FIXED_INPUT - whiteSpaceX;
         float targetHeight = SIZE_FIXED_INPUT - whiteSpaceY;
+        float k = 1;// 缩放比例
+
         float minx, miny, maxx, maxy,
                 minx0, miny0, maxx0, maxy0;
         minx = miny = Float.MAX_VALUE;
@@ -59,10 +61,11 @@ public class Utils {
         for (int i = begin; i < end; i++) {
             avgSize += sizeList.get(i);
         }
-        // 设置2个数的缓冲
-        avgSize = (avgSize + IDEAL_CHAR_SIZE * 0) / Math.max(end - begin + 0, 1);
-        float k = IDEAL_CHAR_SIZE / avgSize;
-        Log.d(TAG, "k=" + k);
+        avgSize /= Math.max(end - begin, 1);
+        if (script.size() > 10) {
+            k = IDEAL_CHAR_SIZE / avgSize;
+        }
+        // else: 笔画太少，怀疑连笔为主，放弃调整比例
         final float currentWidth = maxx - minx;
         final float currentHeight = maxy - miny;
         // 缩放到理想尺度，但是不能超过画布大小
@@ -72,6 +75,7 @@ public class Utils {
         if (k * currentWidth > targetWidth) {
             k = targetWidth / currentWidth;
         }
+        Log.d(TAG, "k=" + k);
         targetHeight = k * currentHeight;
         targetWidth = k * currentWidth;
         whiteSpaceX = (SIZE_FIXED_INPUT - targetWidth) / 2;
