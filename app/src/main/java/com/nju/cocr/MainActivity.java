@@ -11,7 +11,7 @@ import com.nju.cocr.view.ScribbleView;
 public class MainActivity extends AppCompatActivity {
     static final String TAG = "MainActivity";
     ScribbleView scribbleView;
-    FloatingActionButton clsButton, ocrButton;
+    FloatingActionButton clsButton, ocrButton, exchangeButton;
     FloatingActionsMenu menuButton;
 
     @Override
@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
         menuButton = findViewById(R.id.menu_button);
         clsButton = findViewById(R.id.cls_button);
         ocrButton = findViewById(R.id.ocr_button);
+        exchangeButton = findViewById(R.id.exchange_button);
         clsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -35,6 +36,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Toast toast = Toast.makeText(getBaseContext(), R.string.scribble_ocr, Toast.LENGTH_SHORT);
+                toast.show();
+            }
+        });
+        exchangeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast toast = Toast.makeText(getBaseContext(), R.string.scribble_exchange, Toast.LENGTH_SHORT);
                 toast.show();
             }
         });
