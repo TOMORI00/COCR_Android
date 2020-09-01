@@ -62,7 +62,7 @@ public class Utils {
             avgSize += sizeList.get(i);
         }
         avgSize /= Math.max(end - begin, 1);
-        if (script.size() > 10) {
+        if (script.size() > 4) {
             k = IDEAL_CHAR_SIZE / avgSize;
         }
         // else: 笔画太少，怀疑连笔为主，放弃调整比例
