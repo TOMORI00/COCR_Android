@@ -8,6 +8,7 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
+//todo 鲁棒性提升，如果笔画挨得很近，需要做更为详细的阈值判断
 
 /**
  * 此类用于判断直线的端点位置
@@ -79,6 +80,12 @@ public class endpointDetector {
                 result.add(Direction.LeftBottom_RightTop);
             } else if (rightTopCount + leftBottomCount < rightBottomCount + leftTopCount) {
                 result.add(Direction.LeftTop_RightBottom);
+            }
+            //两个一样的情况说明是水平或者竖直，实际上如果倾斜角度很小，那么也有可能被划归为此类
+            else if (rect.width() > rect.height()) {
+                result.add(Direction.Horizon);
+            } else if (rect.height() > rect.width()) {
+                result.add(Direction.Vertical);
             } else {
                 Log.d(TAG, "detect: ERROR");
 

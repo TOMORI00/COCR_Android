@@ -6,5 +6,11 @@ enum Direction {
     LeftBottom_RightTop,
 
     //左上到右下
-    LeftTop_RightBottom;
+    LeftTop_RightBottom,
+
+    //垂直
+    Vertical,
+
+    //水平
+    Horizon;
 }
