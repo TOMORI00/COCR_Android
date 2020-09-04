@@ -11,7 +11,6 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import androidx.annotation.Nullable;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,8 +57,11 @@ public class ScribbleView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        switch (event.getAction()) {
+        switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
+                if (event.getPointerCount()>1) {
+                    break;
+                }
                 Log.d(TAG, "鼠标--->down@" + event.getX() + "," + event.getY());
                 stroke = new Stroke(Color.valueOf(Color.BLACK),
                         SystemClock.currentThreadTimeMillis());
@@ -70,6 +72,10 @@ public class ScribbleView extends View {
                 invalidate();
                 break;
             case MotionEvent.ACTION_MOVE:
+                if (event.getPointerCount()>1) {
+                    Log.d(TAG, "多指Move");
+                    break;
+                }
                 Log.d(TAG, "鼠标--->move@" + event.getX() + "," + event.getY());
                 stroke.add(new PointF(event.getX(), event.getY()), strokeWidth);
                 // ptsIndex = stroke.size() - 1;
@@ -81,6 +87,18 @@ public class ScribbleView extends View {
                 // ptsIndex = stroke.size() - 1;
                 invalidate();
                 break;
+            case MotionEvent.ACTION_POINTER_DOWN:
+                Log.d(TAG, "PointerCountDown " + event.getPointerCount());
+                if (event.getPointerCount() <= 3) {
+                    script.del();
+                }
+                break;
+            case MotionEvent.ACTION_POINTER_UP:
+                Log.d(TAG, "PointerCountUp " + event.getPointerCount());
+                stroke = new Stroke(Color.valueOf(Color.BLACK),
+                        SystemClock.currentThreadTimeMillis());
+                break;
+
         }
         return true;
     }
@@ -214,6 +232,12 @@ public class ScribbleView extends View {
 
         public void clear() {
             data = new ArrayList<>();
+        }
+
+        public void del() {
+            if (data.size()>0) {
+                data.remove(data.size() - 1);
+            }
         }
 
         /**

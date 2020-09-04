@@ -15,40 +15,41 @@
             android:background="@android:color/white"/>
 
     <com.getbase.floatingactionbutton.FloatingActionsMenu
-            android:id="@+id/menu_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:fab_addButtonColorNormal="@android:color/white"
-            app:fab_addButtonColorPressed="@color/white_pressed"
-            app:fab_addButtonPlusIconColor="@color/half_black"
-            app:fab_expandDirection="up"
-            android:layout_marginBottom="16dp"
-            android:layout_marginRight="16dp"
-            android:layout_marginEnd="16dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintRight_toRightOf="parent">
-        <com.getbase.floatingactionbutton.FloatingActionButton
-                android:id="@+id/exchange_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:fab_colorNormal="@android:color/white"
-                app:fab_icon="@drawable/exchange_icon"
-                app:fab_colorPressed="@color/white_pressed"/>
-        <com.getbase.floatingactionbutton.FloatingActionButton
-                android:id="@+id/ocr_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:fab_colorNormal="@android:color/white"
-                app:fab_icon="@drawable/ocr_icon"
-                app:fab_colorPressed="@color/white_pressed"/>
+        android:id="@+id/menu_button"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="16dp"
+        app:fab_addButtonColorNormal="@android:color/white"
+        app:fab_addButtonColorPressed="@color/white_pressed"
+        app:fab_addButtonPlusIconColor="@color/half_black"
+        app:fab_expandDirection="up"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
 
         <com.getbase.floatingactionbutton.FloatingActionButton
-                android:id="@+id/cls_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:fab_colorNormal="@android:color/white"
-                app:fab_icon="@drawable/cls_icon"
-                app:fab_colorPressed="@color/white_pressed"/>
+            android:id="@+id/exchange_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fab_colorNormal="@android:color/white"
+            app:fab_colorPressed="@color/white_pressed"
+            app:fab_icon="@drawable/exchange_icon" />
+
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/ocr_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fab_colorNormal="@android:color/white"
+            app:fab_colorPressed="@color/white_pressed"
+            app:fab_icon="@drawable/ocr_icon" />
+
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/cls_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fab_colorNormal="@android:color/white"
+            app:fab_colorPressed="@color/white_pressed"
+            app:fab_icon="@drawable/cls_icon" />
     </com.getbase.floatingactionbutton.FloatingActionsMenu>
 
 
