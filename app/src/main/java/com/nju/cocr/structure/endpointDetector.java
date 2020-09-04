@@ -92,15 +92,16 @@ public class endpointDetector {
      *
      * @return 查完点后所有点的合集，包括start与end
      */
-    private List<PointF> insertDots() {
+    public List<PointF> insertDots() {
         List<PointF> result = new ArrayList<>();
-        for (List<PointF> i:paths){
+        for (List<PointF> i : paths) {
             PointF startPoint = i.get(0);
             PointF endPoint = i.get(1);
             result.add(startPoint);
             result.add(endPoint);
-            for(int j=1; j<10;j++){
-                result.add(new PointF((endPoint.x-startPoint.x)/10*j,(endPoint.y-startPoint.y)/10*j));
+            //默认选择插入个点
+            for (int j = 1; j < 10; j++) {
+                result.add(new PointF((endPoint.x - startPoint.x) / 10 * j, (endPoint.y - startPoint.y) / 10 * j));
             }
         }
         return result;

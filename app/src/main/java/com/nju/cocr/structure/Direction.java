@@ -6,5 +6,5 @@ enum Direction {
     LeftBottom_RightTop,
 
     //左上到右下
-    LeftTop_RightBottom
+    LeftTop_RightBottom;
 }
