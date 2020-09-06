@@ -15,6 +15,8 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.Math.abs;
+
 public class ScribbleView extends View {
     static final String TAG = "ScribbleView";
     // 记录颜色、线宽、反锯齿策略的变量，用的时候设置属性即可
@@ -55,6 +57,12 @@ public class ScribbleView extends View {
     }
     // int strokeIndex = -1, ptsIndex = -1;
 
+    private double center_X_O;
+    private double center_Y_O;
+    private double distance_X_O;
+    private double distance_Y_O;
+    private double rotate_O;
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getActionMasked()) {
@@ -62,7 +70,7 @@ public class ScribbleView extends View {
                 if (event.getPointerCount()>1) {
                     break;
                 }
-                Log.d(TAG, "鼠标--->down@" + event.getX() + "," + event.getY());
+                Log.d(TAG, "单指--->down@" + event.getX() + "," + event.getY());
                 stroke = new Stroke(Color.valueOf(Color.BLACK),
                         SystemClock.currentThreadTimeMillis());
                 stroke.add(new PointF(event.getX(), event.getY()), strokeWidth);
@@ -72,17 +80,34 @@ public class ScribbleView extends View {
                 invalidate();
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (event.getPointerCount()>1) {
-                    Log.d(TAG, "多指Move");
+                if (event.getPointerCount()==2) {
+                    double center_X = (event.getX(0) + event.getX(1)/2);
+                    double center_Y = (event.getY(0) + event.getY(1)/2);
+                    double distance_X = abs(event.getX(0) - event.getX(1));
+                    double distance_Y = abs(event.getY(0) - event.getY(1));
+                    double D_X = center_X - center_X_O;
+                    double D_Y = center_Y - center_Y_O;
+                    double D_scale = (distance_X*distance_X + distance_Y*distance_Y) / (distance_X_O*distance_X_O+distance_Y_O*distance_Y_O);
+                    double D_rotate = getRotation(event) - rotate_O;
+                    Log.d(TAG,"双指手势---X方向：" + D_X + " Y方向：" + D_Y + " 大小：" + D_scale + " 旋转：" + D_rotate);
+                    center_X_O = center_X;
+                    center_Y_O = center_Y;
+                    distance_X_O = distance_X;
+                    distance_Y_O = distance_Y;
+                    rotate_O = getRotation(event);
                     break;
                 }
-                Log.d(TAG, "鼠标--->move@" + event.getX() + "," + event.getY());
+                else if (event.getPointerCount()>2) {
+                    Log.d(TAG, "三指及以上移动");
+
+                }
+                Log.d(TAG, "单指--->move@" + event.getX() + "," + event.getY());
                 stroke.add(new PointF(event.getX(), event.getY()), strokeWidth);
                 // ptsIndex = stroke.size() - 1;
                 invalidate();
                 break;
             case MotionEvent.ACTION_UP:
-                Log.d(TAG, "鼠标--->up@" + event.getX() + "," + event.getY());
+                Log.d(TAG, "单指--->up@" + event.getX() + "," + event.getY());
                 stroke.add(new PointF(event.getX(), event.getY()), strokeWidth);
                 // ptsIndex = stroke.size() - 1;
                 invalidate();
@@ -90,6 +115,7 @@ public class ScribbleView extends View {
             case MotionEvent.ACTION_POINTER_DOWN:
                 Log.d(TAG, "PointerCountDown " + event.getPointerCount());
                 if (event.getPointerCount() <= 3) {
+                    Log.d("TAG", "delete");
                     script.del();
                 }
                 break;
@@ -102,6 +128,17 @@ public class ScribbleView extends View {
         }
         return true;
     }
+
+    private double getRotation(MotionEvent event) {
+        double delta_x = (event.getX(0) - event.getX(1));
+        double delta_y = (event.getY(0) - event.getY(1));
+        double radians = Math.atan2(delta_y, delta_x);
+        return (double) Math.toDegrees(radians);
+    }
+
+
+
+
 
     /**
      * 刷新整个 View，View显示什么完全由这个函数决定
@@ -291,3 +328,36 @@ public class ScribbleView extends View {
         }
     }
 }
+
+//                    if (D_X==0 && D_Y > 0)
+//                    {
+//                        Log.d(TAG, "双指上---" + D_X + " " + D_Y);
+//                    }
+//                    else if (D_X > 0 && D_Y > 0)
+//                    {
+//                        Log.d(TAG, "双指左上---" + D_X + " " + D_Y);
+//                    }
+//                    else if (D_X < 0 && D_Y > 0)
+//                    {
+//                        Log.d(TAG, "双指右上---" + D_X + " " + D_Y);
+//                    }
+//                    else if (D_X==0 && D_Y < 0)
+//                    {
+//                        Log.d(TAG, "双指下---" + D_X + " " + D_Y);
+//                    }
+//                    else if (D_X > 0 && D_Y < 0)
+//                    {
+//                        Log.d(TAG, "双指左下---"+ D_X + " " + D_Y);
+//                    }
+//                    else if (D_X < 0 && D_Y < 0)
+//                    {
+//                        Log.d(TAG, "双指右下---"+ D_X + " " + D_Y);
+//                    }
+//                    else if (D_X > 0 && D_Y == 0)
+//                    {
+//                        Log.d(TAG, "双指左---"+ D_X + " " + D_Y);
+//                    }
+//                    else if (D_X < 0 && D_Y == 0)
+//                    {
+//                        Log.d(TAG, "双指右---"+ D_X + " " + D_Y);
+//                    }
