@@ -57,11 +57,15 @@ public class ScribbleView extends View {
     }
     // int strokeIndex = -1, ptsIndex = -1;
 
-    private double center_X_O;
-    private double center_Y_O;
-    private double distance_X_O;
-    private double distance_Y_O;
+//    private double center_X_O;
+//    private double center_Y_O;
+//    private double distance_X_O;
+//    private double distance_Y_O;
     private double rotate_O;
+
+    private static double SPEED = 4.5;//移动倍率
+    private static double SCALE = 8;//放大倍率
+    private static double SENSE = 0.005;//敏感度，越低需要越小的scale以触发缩放
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -81,25 +85,38 @@ public class ScribbleView extends View {
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (event.getPointerCount()==2) {
-                    double center_X = (event.getX(0) + event.getX(1)/2);
-                    double center_Y = (event.getY(0) + event.getY(1)/2);
+                    if (event.getHistorySize()==0) return true;
+                    double center_X = (event.getX(0) + event.getX(1)) / 2;
+                    double center_Y = (event.getY(0) + event.getY(1)) / 2;
+                    double center_X_O = (event.getHistoricalX(0, event.getHistorySize() - 1) + event.getHistoricalX(1, event.getHistorySize() - 1)) / 2;
+                    double center_Y_O = (event.getHistoricalY(0, event.getHistorySize() - 1) + event.getHistoricalY(1, event.getHistorySize() - 1)) / 2;
+
                     double distance_X = abs(event.getX(0) - event.getX(1));
                     double distance_Y = abs(event.getY(0) - event.getY(1));
+                    double distance_X_O = abs((event.getHistoricalX(0, event.getHistorySize() - 1) - event.getHistoricalX(1, event.getHistorySize() - 1)));
+                    double distance_Y_O = abs((event.getHistoricalY(0, event.getHistorySize() - 1) - event.getHistoricalY(1, event.getHistorySize() - 1)));
+
                     double D_X = center_X - center_X_O;
                     double D_Y = center_Y - center_Y_O;
                     double D_scale = (distance_X*distance_X + distance_Y*distance_Y) / (distance_X_O*distance_X_O+distance_Y_O*distance_Y_O);
+
+
                     double D_rotate = getRotation(event) - rotate_O;
+
                     Log.d(TAG,"双指手势---X方向：" + D_X + " Y方向：" + D_Y + " 大小：" + D_scale + " 旋转：" + D_rotate);
-                    center_X_O = center_X;
-                    center_Y_O = center_Y;
-                    distance_X_O = distance_X;
-                    distance_Y_O = distance_Y;
+
+//                    center_X_O = center_X;
+//                    center_Y_O = center_Y;
+//                    distance_X_O = distance_X;
+//                    distance_Y_O = distance_Y;
                     rotate_O = getRotation(event);
+
+                    handleActions(D_X * SPEED, D_Y * SPEED, D_scale, center_X, center_Y, D_rotate);
+
                     break;
                 }
                 else if (event.getPointerCount()>2) {
                     Log.d(TAG, "三指及以上移动");
-
                 }
                 Log.d(TAG, "单指--->move@" + event.getX() + "," + event.getY());
                 stroke.add(new PointF(event.getX(), event.getY()), strokeWidth);
@@ -114,7 +131,7 @@ public class ScribbleView extends View {
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
                 Log.d(TAG, "PointerCountDown " + event.getPointerCount());
-                if (event.getPointerCount() <= 3) {
+                if (event.getPointerCount() == 2 && stroke.size()==1) {
                     Log.d("TAG", "delete");
                     script.del();
                 }
@@ -136,8 +153,40 @@ public class ScribbleView extends View {
         return (double) Math.toDegrees(radians);
     }
 
+    private void handleActions(double dx, double dy, double s, double cx, double cy, double r) {
+        handleTranslation(dx,dy);
+        Log.d(TAG,"AAAAAA"+abs(s-1));
+        if (abs(s-1) < SENSE) {
+            handleZooming(cx, cy, s);
+        }
+        handleRotate(r);
+        invalidate();
+    }
 
+    private void handleRotate(double r) {
+    }
 
+    private void handleZooming(double x, double y, double s) {
+
+        Log.d(TAG,s+"");
+        for (int i = 0; i < script.size(); i++) {
+            for (int j = 0; j < script.data.get(i).size(); j++) {
+                double ox = script.data.get(i).data.get(j).x;
+                double oy = script.data.get(i).data.get(j).y;
+                script.data.get(i).data.get(j).x += (s - 1) * SCALE * (ox - x);
+                script.data.get(i).data.get(j).y += (s - 1) * SCALE * (oy - y);
+            }
+        }
+    }
+
+    private void handleTranslation(double offsetX, double offsetY) {
+        for (int i = 0; i < script.size(); i++) {
+            for (int j = 0; j < script.data.get(i).size(); j++) {
+                script.data.get(i).data.get(j).x += offsetX;
+                script.data.get(i).data.get(j).y += offsetY;
+            }
+        }
+    }
 
 
     /**
