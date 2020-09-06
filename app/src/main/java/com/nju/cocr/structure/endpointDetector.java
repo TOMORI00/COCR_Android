@@ -8,6 +8,7 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
+// todo 楔形键from与to区分
 //todo 鲁棒性提升，如果笔画挨得很近，需要做更为详细的阈值判断
 
 /**
