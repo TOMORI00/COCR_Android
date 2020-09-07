@@ -1,9 +1,7 @@
 package com.nju.cocr.structure;
 
-import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.RectF;
-
 import com.nju.cocr.dnn.Recognition;
 
 import java.util.ArrayList;
@@ -197,12 +195,12 @@ public class Synthesizer {
                     Atom atomPossible = new Atom(5, rect);
                     //判断此可能的隐式碳原子是否是已经存在atoms中的显式碳原子，如果是，则去重
                     boolean alreadyExisted = false;
-                    for(Atom atom:atoms){
-                        if(atom.getRect().contains(atomPossible.getRect().centerX(),atomPossible.getRect().centerY())) {
+                    for (Atom atom : atoms) {
+                        if (atom.getRect().contains(atomPossible.getRect().centerX(), atomPossible.getRect().centerY())) {
                             alreadyExisted = true;
                         }
                     }
-                    if(!alreadyExisted){
+                    if (!alreadyExisted) {
                         atoms.add(atomPossible);
                     }
                 }
@@ -212,20 +210,19 @@ public class Synthesizer {
 
     /**
      * 添加边缘碳原子
-     *
      */
-    public void addTerminalCarbon(){
+    public void addTerminalCarbon() {
         PointF centerPoint = null;
-        for(int i=0;i<cons.size();i++){
-            if(cons.get(i).get(0) == null){
+        for (int i = 0; i < cons.size(); i++) {
+            if (cons.get(i).get(0) == null) {
                 centerPoint = bonds.get(i).getStartPoint();
                 RectF rect = new RectF((float) (centerPoint.x - atomAvgWidth / 2), (float) (centerPoint.y - atomAvgWidth / 2), (float) (centerPoint.x + atomAvgWidth / 2), (float) (centerPoint.y + atomAvgWidth / 2));
-                atoms.add(new Atom(5,rect));
+                atoms.add(new Atom(5, rect));
             }
-            if(cons.get(i).get(1) == null){
+            if (cons.get(i).get(1) == null) {
                 centerPoint = bonds.get(i).getEndPoint();
                 RectF rect = new RectF((float) (centerPoint.x - atomAvgWidth / 2), (float) (centerPoint.y - atomAvgWidth / 2), (float) (centerPoint.x + atomAvgWidth / 2), (float) (centerPoint.y + atomAvgWidth / 2));
-                atoms.add(new Atom(5,rect));
+                atoms.add(new Atom(5, rect));
             }
         }
     }

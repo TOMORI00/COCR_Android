@@ -11,18 +11,21 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import androidx.annotation.Nullable;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.cos;
-import static java.lang.Math.sin;
+import static java.lang.Math.*;
 
 public class ScribbleView extends View {
     static final String TAG = "ScribbleView";
     // 记录颜色、线宽、反锯齿策略的变量，用的时候设置属性即可
     static Paint paint;
+    private static double SPEED = 4.5;//移动倍率
+    private static double SCALE = 8;//放大倍率
+    private static double SENSE = 0.005;//敏感度，越低需要越小的scale以触发缩放
+    private static double SENSE2 = 5;//敏感度，越低需要越小的rotation以触发旋转
 
     static {
         paint = new Paint();
@@ -40,15 +43,14 @@ public class ScribbleView extends View {
     public ScribbleView(Context context) {
         super(context);
     }
+    // int strokeIndex = -1, ptsIndex = -1;
 
     public ScribbleView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
-
     public ScribbleView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
-
     public ScribbleView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
@@ -57,18 +59,12 @@ public class ScribbleView extends View {
         script = new Script();
         // strokeIndex = ptsIndex = -1;
     }
-    // int strokeIndex = -1, ptsIndex = -1;
-
-    private static double SPEED = 4.5;//移动倍率
-    private static double SCALE = 8;//放大倍率
-    private static double SENSE = 0.005;//敏感度，越低需要越小的scale以触发缩放
-    private static double SENSE2 = 5;//敏感度，越低需要越小的rotation以触发旋转
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                if (event.getPointerCount()>1) {
+                if (event.getPointerCount() > 1) {
                     break;
                 }
                 Log.d(TAG, "单指--->down@" + event.getX() + "," + event.getY());
@@ -81,8 +77,8 @@ public class ScribbleView extends View {
                 invalidate();
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (event.getPointerCount()==2) {
-                    if (event.getHistorySize()==0) return true;
+                if (event.getPointerCount() == 2) {
+                    if (event.getHistorySize() == 0) return true;
                     double center_X = (event.getX(0) + event.getX(1)) / 2;
                     double center_Y = (event.getY(0) + event.getY(1)) / 2;
                     double center_X_O = (event.getHistoricalX(0, event.getHistorySize() - 1) + event.getHistoricalX(1, event.getHistorySize() - 1)) / 2;
@@ -95,16 +91,15 @@ public class ScribbleView extends View {
 
                     double D_X = center_X - center_X_O;
                     double D_Y = center_Y - center_Y_O;
-                    double D_scale = (distance_X*distance_X + distance_Y*distance_Y) / (distance_X_O*distance_X_O+distance_Y_O*distance_Y_O);
+                    double D_scale = (distance_X * distance_X + distance_Y * distance_Y) / (distance_X_O * distance_X_O + distance_Y_O * distance_Y_O);
                     double D_rotate = getRotation(event);
 
-                    Log.d(TAG,"双指手势---X方向：" + D_X + " Y方向：" + D_Y + " 大小：" + D_scale + " 旋转：" + D_rotate);
+                    Log.d(TAG, "双指手势---X方向：" + D_X + " Y方向：" + D_Y + " 大小：" + D_scale + " 旋转：" + D_rotate);
 
                     handleActions(D_X * SPEED, D_Y * SPEED, D_scale, center_X, center_Y, D_rotate);
 
                     break;
-                }
-                else if (event.getPointerCount()>2) {
+                } else if (event.getPointerCount() > 2) {
                     Log.d(TAG, "三指及以上移动");
                 }
                 Log.d(TAG, "单指--->move@" + event.getX() + "," + event.getY());
@@ -120,7 +115,7 @@ public class ScribbleView extends View {
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
                 Log.d(TAG, "PointerCountDown " + event.getPointerCount());
-                if (event.getPointerCount() == 2 && stroke.size()==1) {
+                if (event.getPointerCount() == 2 && stroke.size() == 1) {
                     Log.d("TAG", "delete");
                     script.del();
                 }
@@ -139,15 +134,15 @@ public class ScribbleView extends View {
         double delta_x = (event.getX(0) - event.getX(1));
         double delta_y = (event.getY(0) - event.getY(1));
         double radians = Math.atan2(delta_y, delta_x);
-        double delta_x_h = (event.getHistoricalX(0,event.getHistorySize()-1) - event.getHistoricalX(1,event.getHistorySize()-1));
-        double delta_y_h = (event.getHistoricalY(0,event.getHistorySize()-1) - event.getHistoricalY(1,event.getHistorySize()-1));
+        double delta_x_h = (event.getHistoricalX(0, event.getHistorySize() - 1) - event.getHistoricalX(1, event.getHistorySize() - 1));
+        double delta_y_h = (event.getHistoricalY(0, event.getHistorySize() - 1) - event.getHistoricalY(1, event.getHistorySize() - 1));
         double radians_h = Math.atan2(delta_y_h, delta_x_h);
         return ((double) Math.toDegrees(radians)) - (double) Math.toDegrees(radians_h);
     }
 
     private void handleActions(double dx, double dy, double s, double cx, double cy, double r) {
-        handleTranslation(dx,dy);
-        if (abs(s-1) < SENSE) {
+        handleTranslation(dx, dy);
+        if (abs(s - 1) < SENSE) {
             handleZooming(cx, cy, s);
         }
         if (abs(r) < SENSE2) {
@@ -276,7 +271,7 @@ public class ScribbleView extends View {
             if (data.size() == 0) {
                 return;
             }
-            paint.setColor(color.pack());
+            paint.setColor(color.toArgb());
             // 防止size=1时，漏掉一个点
             paint.setStrokeWidth(widths.get(0));
             canvas.drawLine(data.get(0).x, data.get(0).y,
@@ -323,7 +318,7 @@ public class ScribbleView extends View {
         }
 
         public void del() {
-            if (data.size()>0) {
+            if (data.size() > 0) {
                 data.remove(data.size() - 1);
             }
         }

@@ -4,21 +4,21 @@ import android.graphics.RectF;
 
 public class Atom {
 
-        int id;
+    int id;
 
-        RectF rect;
+    RectF rect;
 
-        public Atom(int id, RectF rect) {
-                this.id = id;
-                this.rect = rect;
-        }
+    public Atom(int id, RectF rect) {
+        this.id = id;
+        this.rect = rect;
+    }
 
-        public int getId() {
-                return id;
-        }
+    public int getId() {
+        return id;
+    }
 
-        public RectF getRect() {
-                return rect;
-        }
+    public RectF getRect() {
+        return rect;
+    }
 
 }

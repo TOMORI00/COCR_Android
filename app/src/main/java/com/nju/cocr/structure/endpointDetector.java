@@ -1,10 +1,8 @@
-
 package com.nju.cocr.structure;
 
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.util.Log;
-
 
 import java.util.ArrayList;
 import java.util.List;
