@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.cos;
+import static java.lang.Math.sin;
 
 public class ScribbleView extends View {
     static final String TAG = "ScribbleView";
@@ -57,15 +59,10 @@ public class ScribbleView extends View {
     }
     // int strokeIndex = -1, ptsIndex = -1;
 
-//    private double center_X_O;
-//    private double center_Y_O;
-//    private double distance_X_O;
-//    private double distance_Y_O;
-    private double rotate_O;
-
     private static double SPEED = 4.5;//移动倍率
     private static double SCALE = 8;//放大倍率
     private static double SENSE = 0.005;//敏感度，越低需要越小的scale以触发缩放
+    private static double SENSE2 = 5;//敏感度，越低需要越小的rotation以触发旋转
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -99,17 +96,9 @@ public class ScribbleView extends View {
                     double D_X = center_X - center_X_O;
                     double D_Y = center_Y - center_Y_O;
                     double D_scale = (distance_X*distance_X + distance_Y*distance_Y) / (distance_X_O*distance_X_O+distance_Y_O*distance_Y_O);
-
-
-                    double D_rotate = getRotation(event) - rotate_O;
+                    double D_rotate = getRotation(event);
 
                     Log.d(TAG,"双指手势---X方向：" + D_X + " Y方向：" + D_Y + " 大小：" + D_scale + " 旋转：" + D_rotate);
-
-//                    center_X_O = center_X;
-//                    center_Y_O = center_Y;
-//                    distance_X_O = distance_X;
-//                    distance_Y_O = distance_Y;
-                    rotate_O = getRotation(event);
 
                     handleActions(D_X * SPEED, D_Y * SPEED, D_scale, center_X, center_Y, D_rotate);
 
@@ -150,25 +139,38 @@ public class ScribbleView extends View {
         double delta_x = (event.getX(0) - event.getX(1));
         double delta_y = (event.getY(0) - event.getY(1));
         double radians = Math.atan2(delta_y, delta_x);
-        return (double) Math.toDegrees(radians);
+        double delta_x_h = (event.getHistoricalX(0,event.getHistorySize()-1) - event.getHistoricalX(1,event.getHistorySize()-1));
+        double delta_y_h = (event.getHistoricalY(0,event.getHistorySize()-1) - event.getHistoricalY(1,event.getHistorySize()-1));
+        double radians_h = Math.atan2(delta_y_h, delta_x_h);
+        return ((double) Math.toDegrees(radians)) - (double) Math.toDegrees(radians_h);
     }
 
     private void handleActions(double dx, double dy, double s, double cx, double cy, double r) {
         handleTranslation(dx,dy);
-        Log.d(TAG,"AAAAAA"+abs(s-1));
         if (abs(s-1) < SENSE) {
             handleZooming(cx, cy, s);
         }
-        handleRotate(r);
+        if (abs(r) < SENSE2) {
+            handleRotate(cx, cy, r);
+        }
         invalidate();
     }
 
-    private void handleRotate(double r) {
+    private void handleRotate(double cx, double cy, double r) {
+        for (int i = 0; i < script.size(); i++) {
+            for (int j = 0; j < script.data.get(i).size(); j++) {
+                double ox = script.data.get(i).data.get(j).x;
+                double oy = script.data.get(i).data.get(j).y;
+                double x1 = ox - cx;
+                double y1 = oy - cy;
+                script.data.get(i).data.get(j).x = (float) (cos(x1) + sin(y1));
+                script.data.get(i).data.get(j).y = (float) (-sin(x1) + cos(y1));
+            }
+        }
     }
 
     private void handleZooming(double x, double y, double s) {
-
-        Log.d(TAG,s+"");
+//        Log.d(TAG,s+"");
         for (int i = 0; i < script.size(); i++) {
             for (int j = 0; j < script.data.get(i).size(); j++) {
                 double ox = script.data.get(i).data.get(j).x;
@@ -377,36 +379,3 @@ public class ScribbleView extends View {
         }
     }
 }
-
-//                    if (D_X==0 && D_Y > 0)
-//                    {
-//                        Log.d(TAG, "双指上---" + D_X + " " + D_Y);
-//                    }
-//                    else if (D_X > 0 && D_Y > 0)
-//                    {
-//                        Log.d(TAG, "双指左上---" + D_X + " " + D_Y);
-//                    }
-//                    else if (D_X < 0 && D_Y > 0)
-//                    {
-//                        Log.d(TAG, "双指右上---" + D_X + " " + D_Y);
-//                    }
-//                    else if (D_X==0 && D_Y < 0)
-//                    {
-//                        Log.d(TAG, "双指下---" + D_X + " " + D_Y);
-//                    }
-//                    else if (D_X > 0 && D_Y < 0)
-//                    {
-//                        Log.d(TAG, "双指左下---"+ D_X + " " + D_Y);
-//                    }
-//                    else if (D_X < 0 && D_Y < 0)
-//                    {
-//                        Log.d(TAG, "双指右下---"+ D_X + " " + D_Y);
-//                    }
-//                    else if (D_X > 0 && D_Y == 0)
-//                    {
-//                        Log.d(TAG, "双指左---"+ D_X + " " + D_Y);
-//                    }
-//                    else if (D_X < 0 && D_Y == 0)
-//                    {
-//                        Log.d(TAG, "双指右---"+ D_X + " " + D_Y);
-//                    }
