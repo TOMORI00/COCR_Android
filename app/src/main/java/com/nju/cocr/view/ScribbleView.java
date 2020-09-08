@@ -22,10 +22,21 @@ public class ScribbleView extends View {
     static final String TAG = "ScribbleView";
     // 记录颜色、线宽、反锯齿策略的变量，用的时候设置属性即可
     static Paint paint;
-    private static double SPEED = 4.5;//移动倍率
-    private static double SCALE = 8;//放大倍率
-    private static double SENSE = 0.005;//敏感度，越低需要越小的scale以触发缩放
-    private static double SENSE2 = 5;//敏感度，越低需要越小的rotation以触发旋转
+
+    //移动速率
+    private static double SPEED = 4.5;
+
+    //放大速率
+    private static double SCALE = 8;
+
+    //旋转速率
+    private static double ROTATE = 0.2;
+
+    //缩放敏感度，越低需要越小的scale以触发缩放
+    private static double SENSE = 0.005;
+
+    //旋转敏感度，越低需要越小的rotation以触发旋转
+    private static double SENSE2 = 0.85;
 
     static {
         paint = new Paint();
@@ -137,7 +148,7 @@ public class ScribbleView extends View {
         double delta_x_h = (event.getHistoricalX(0, event.getHistorySize() - 1) - event.getHistoricalX(1, event.getHistorySize() - 1));
         double delta_y_h = (event.getHistoricalY(0, event.getHistorySize() - 1) - event.getHistoricalY(1, event.getHistorySize() - 1));
         double radians_h = Math.atan2(delta_y_h, delta_x_h);
-        return ((double) Math.toDegrees(radians)) - (double) Math.toDegrees(radians_h);
+        return ((double) Math.toDegrees(radians_h)) - (double) Math.toDegrees(radians);
     }
 
     private void handleActions(double dx, double dy, double s, double cx, double cy, double r) {
@@ -146,7 +157,7 @@ public class ScribbleView extends View {
             handleZooming(cx, cy, s);
         }
         if (abs(r) < SENSE2) {
-            handleRotate(cx, cy, r);
+            handleRotate(cx, cy, ROTATE * r);
         }
         invalidate();
     }
@@ -158,8 +169,8 @@ public class ScribbleView extends View {
                 double oy = script.data.get(i).data.get(j).y;
                 double x1 = ox - cx;
                 double y1 = oy - cy;
-                script.data.get(i).data.get(j).x = (float) (cos(x1) + sin(y1));
-                script.data.get(i).data.get(j).y = (float) (-sin(x1) + cos(y1));
+                script.data.get(i).data.get(j).x = (float) ((cos(r)*x1 + sin(r)*y1) + cx);
+                script.data.get(i).data.get(j).y = (float) ((-sin(r)*x1 + cos(r)*y1) + cy);
             }
         }
     }
