@@ -75,7 +75,7 @@ public class Utils {
         if (k * currentWidth > targetWidth) {
             k = targetWidth / currentWidth;
         }
-        Log.d(TAG, "k=" + k);
+        Log.d(TAG, "k=" + k + ",LIST=" + sizeList);
         targetHeight = k * currentHeight;
         targetWidth = k * currentWidth;
         whiteSpaceX = (SIZE_FIXED_INPUT - targetWidth) / 2;

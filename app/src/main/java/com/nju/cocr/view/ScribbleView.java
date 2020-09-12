@@ -4,18 +4,14 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Point;
 import android.graphics.PointF;
 import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -360,7 +356,11 @@ public class ScribbleView extends View {
         public List<List<PointF>> get() {
             List<List<PointF>> lists = new ArrayList<>();
             for (Stroke s : data) {
-                lists.add(s.get());
+                List<PointF> tmp = new ArrayList<>();
+                for (PointF p : s.get()) {
+                    tmp.add(new PointF(p.x, p.y));
+                }
+                lists.add(tmp);
             }
             return lists;
         }

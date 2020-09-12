@@ -1,15 +1,18 @@
 package com.nju.cocr;
 
-import android.graphics.PointF;
+import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
+import com.nju.cocr.dnn.Detector;
+import com.nju.cocr.dnn.DetectorInterface;
+import com.nju.cocr.dnn.Recognition;
+import com.nju.cocr.dnn.Utils;
 import com.nju.cocr.view.ScribbleView;
 
 import java.util.List;
@@ -19,9 +22,22 @@ public class MainActivity extends AppCompatActivity {
     ScribbleView scribbleView;
     FloatingActionButton clsButton, ocrButton, exchangeButton;
     FloatingActionsMenu menuButton;
+    Context ctx;
+    DetectorInterface detector;
+    void runForBitmap(final String filename, int trueNum, boolean showDetails) {
+        Bitmap image = Utils.readBitmapFromAssets(ctx.getAssets(), filename);
+        long start = System.currentTimeMillis();
+        List<Recognition> objects = detector.getRecognition(image);
+        long end = System.currentTimeMillis();
+        Log.d(TAG, "cost " + (end - start) + "ms");
+        if (showDetails) {
+            Log.d(TAG, "find " + objects.size() + " items:" + objects);
+        }
+        image.recycle();
+    }
 
     @Override
-    protected void onCreate(final Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         scribbleView = findViewById(R.id.scribble_view);
@@ -29,6 +45,15 @@ public class MainActivity extends AppCompatActivity {
         clsButton = findViewById(R.id.cls_button);
         ocrButton = findViewById(R.id.ocr_button);
         exchangeButton = findViewById(R.id.exchange_button);
+
+        ctx=getBaseContext();
+        detector = Detector.getInstance();
+        detector.setThreadNum(4);
+        detector.enableNNAPI(true);
+        detector.setConfThresh(0.3f);
+        detector.setIOUThresh(0.3f);
+        detector.initialize(ctx.getAssets());
+
         clsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -43,13 +68,11 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Toast toast = Toast.makeText(getBaseContext(), R.string.scribble_ocr, Toast.LENGTH_SHORT);
                 toast.show();
-                List<List<PointF>> script = scribbleView.getScript();
-                for (int i = 0; i < script.size(); i++) {
-                    for (int j = 0; j < script.get(i).size(); j++) {
-                        Log.d(TAG, String.valueOf(script.get(i).get(j)));
-                    }
-                    Log.d(TAG, "==========================================");
-                }
+                // runForBitmap("testcase/1a0h.jpg", 28, false);
+                // runForBitmap("testcase/234d.jpg", 51, false);
+                List<Recognition> objects = detector.getRecognition(scribbleView.getScript());
+                Log.d(TAG,"XGD:"+scribbleView.getScript());
+                Log.d(TAG,"XGD:"+objects.toString());
             }
         });
         exchangeButton.setOnClickListener(new View.OnClickListener() {
@@ -99,6 +122,4 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         Log.d(TAG, "onDestroy");
     }
-
-
 }
