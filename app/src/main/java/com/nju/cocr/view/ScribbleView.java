@@ -4,12 +4,15 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.*;
@@ -46,6 +49,7 @@ public class ScribbleView extends View {
 
     // 当前正在绘制的笔画
     Stroke stroke;
+
     // 记录所有笔画的结构
     Script script = new Script();
     // 默认线宽
@@ -59,9 +63,11 @@ public class ScribbleView extends View {
     public ScribbleView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
+
     public ScribbleView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
+
     public ScribbleView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
@@ -69,6 +75,10 @@ public class ScribbleView extends View {
     public void clear() {
         script = new Script();
         // strokeIndex = ptsIndex = -1;
+    }
+
+    public List<List<PointF>> getScript() {
+        return script.get();
     }
 
     @Override
@@ -169,8 +179,8 @@ public class ScribbleView extends View {
                 double oy = script.data.get(i).data.get(j).y;
                 double x1 = ox - cx;
                 double y1 = oy - cy;
-                script.data.get(i).data.get(j).x = (float) ((cos(r)*x1 + sin(r)*y1) + cx);
-                script.data.get(i).data.get(j).y = (float) ((-sin(r)*x1 + cos(r)*y1) + cy);
+                script.data.get(i).data.get(j).x = (float) ((cos(r) * x1 + sin(r) * y1) + cx);
+                script.data.get(i).data.get(j).y = (float) ((-sin(r) * x1 + cos(r) * y1) + cy);
             }
         }
     }
@@ -228,6 +238,7 @@ public class ScribbleView extends View {
         // 落笔的时间戳
         long timestamp;
 
+
         /**
          * 构造一个新笔画
          *
@@ -270,7 +281,11 @@ public class ScribbleView extends View {
         }
 
         public List<PointF> get() {
-            return data;
+            List<PointF> res = new ArrayList<>();
+            for (PointF p : data) {
+                res.add(new PointF(p.x, p.y));
+            }
+            return res;
         }
 
         /**
@@ -299,18 +314,21 @@ public class ScribbleView extends View {
     /**
      * 表示一组笔画的集合
      */
-    class Script {
+    class Script implements Cloneable {
         List<Stroke> data;
 
         public Script() {
             data = new ArrayList<>();
         }
 
+
         /**
          * 返回有多少笔画
          *
          * @return
          */
+
+
         public int size() {
             return data.size();
         }
@@ -340,21 +358,11 @@ public class ScribbleView extends View {
          * @return
          */
         public List<List<PointF>> get() {
-            List<List<PointF>> copy = new ArrayList<>();
+            List<List<PointF>> lists = new ArrayList<>();
             for (Stroke s : data) {
-                try {
-                    ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-                    ObjectOutputStream out = new ObjectOutputStream(byteOut);
-                    out.writeObject(s.get());
-                    ByteArrayInputStream byteIn = new ByteArrayInputStream(byteOut.toByteArray());
-                    ObjectInputStream in = new ObjectInputStream(byteIn);
-                    List<PointF> sCopy = (List<PointF>) in.readObject();
-                    copy.add(sCopy);
-                } catch (IOException | ClassNotFoundException e) {
-
-                }
+                lists.add(s.get());
             }
-            return copy;
+            return lists;
         }
 
         // public void drawBy(Canvas canvas) {

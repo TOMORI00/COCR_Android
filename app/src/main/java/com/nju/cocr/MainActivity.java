@@ -1,13 +1,18 @@
 package com.nju.cocr;
 
+import android.graphics.PointF;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.nju.cocr.view.ScribbleView;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     static final String TAG = "MainActivity";
@@ -16,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
     FloatingActionsMenu menuButton;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         scribbleView = findViewById(R.id.scribble_view);
@@ -38,6 +43,13 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Toast toast = Toast.makeText(getBaseContext(), R.string.scribble_ocr, Toast.LENGTH_SHORT);
                 toast.show();
+                List<List<PointF>> script = scribbleView.getScript();
+                for (int i = 0; i < script.size(); i++) {
+                    for (int j = 0; j < script.get(i).size(); j++) {
+                        Log.d(TAG, String.valueOf(script.get(i).get(j)));
+                    }
+                    Log.d(TAG, "==========================================");
+                }
             }
         });
         exchangeButton.setOnClickListener(new View.OnClickListener() {
@@ -87,4 +99,6 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         Log.d(TAG, "onDestroy");
     }
+
+
 }
