@@ -37,6 +37,25 @@ public class ScribbleView extends View {
     //旋转敏感度，越低需要越小的rotation以触发旋转
     private static double SENSE2 = 0.85;
 
+    //记录当前画笔状态，0为默认画笔，1为橡皮擦
+    private int drawingstate = 0;
+
+    public int getDrawingstate() {
+        return drawingstate;
+    }
+
+    public void setDrawingstate(int drawingstate) {
+        this.drawingstate = drawingstate;
+    }
+
+    //记录橡皮擦路线的中心坐标、起点终点坐标
+    private double era_cenX = 0.0;
+    private double era_cenY = 0.0;
+    private double era_binX = 0.0;
+    private double era_endX = 0.0;
+    private double era_binY = 0.0;
+    private double era_endY = 0.0;
+
     static {
         paint = new Paint();
         paint.setStrokeCap(Paint.Cap.ROUND);
@@ -46,8 +65,15 @@ public class ScribbleView extends View {
     // 当前正在绘制的笔画
     Stroke stroke;
 
+    //记录橡皮擦产生的临时画笔
+    Stroke tempStroke;
+
     // 记录所有笔画的结构
     Script script = new Script();
+
+    //记录记录擦除痕迹的临时结构
+    Script tempScript = new Script();
+
     // 默认线宽
     float strokeWidth = 16;
 
@@ -79,6 +105,7 @@ public class ScribbleView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if(drawingstate==0){
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 if (event.getPointerCount() > 1) {
@@ -142,7 +169,48 @@ public class ScribbleView extends View {
                 stroke = new Stroke(Color.valueOf(Color.BLACK),
                         SystemClock.currentThreadTimeMillis());
                 break;
-
+        }
+        }
+        else {
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    if (event.getPointerCount() > 1) {
+                        break;
+                    }
+                    tempStroke = new Stroke(Color.valueOf(Color.WHITE),
+                            SystemClock.currentThreadTimeMillis());
+                    tempStroke.add(new PointF(event.getX(), event.getY()), strokeWidth);
+                    tempScript.add(tempStroke);
+                    //script.add(tempStroke);
+                    era_binX = event.getX();
+                    era_binY = event.getY();
+                    invalidate();
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    tempStroke.add(new PointF(event.getX(), event.getY()), strokeWidth);
+                    invalidate();
+                    break;
+                case MotionEvent.ACTION_UP:
+                    tempStroke.add(new PointF(event.getX(), event.getY()), strokeWidth);
+                    era_endX = event.getX();
+                    era_endY = event.getY();
+                    era_cenX = (era_binX+era_endX)/2.0;
+                    era_cenY = (era_binY+era_endY)/2.0;
+                    for (Stroke s : script.data){
+                        if(((s.data.get(0).x <= era_cenX && era_cenX <= s.data.get(s.data.size()-1).x) ||
+                                (s.data.get(0).x >= era_cenX && era_cenX >= s.data.get(s.data.size()-1).x)) &&
+                                ((s.data.get(0).y <= era_cenY && era_cenY <= s.data.get(s.data.size()-1).y) ||
+                                        (s.data.get(0).y >= era_cenY && era_cenY >= s.data.get(s.data.size()-1).y))){
+                            script.data.remove(s);
+                            invalidate();
+                            era_cenX = (double)0.0;
+                            era_cenY = (double)0.0;
+                            break;
+                        }
+                    }
+                    invalidate();
+                    break;
+        }
         }
         return true;
     }

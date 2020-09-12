@@ -20,7 +20,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     static final String TAG = "MainActivity";
     ScribbleView scribbleView;
-    FloatingActionButton clsButton, ocrButton, exchangeButton;
+    FloatingActionButton clsButton, ocrButton, exchangeButton, eraserButton, penButton;
     FloatingActionsMenu menuButton;
     Context ctx;
     DetectorInterface detector;
@@ -45,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
         clsButton = findViewById(R.id.cls_button);
         ocrButton = findViewById(R.id.ocr_button);
         exchangeButton = findViewById(R.id.exchange_button);
+        eraserButton = findViewById(R.id.eraser_button);
+        penButton = findViewById(R.id.pen_button);
 
         ctx=getBaseContext();
         detector = Detector.getInstance();
@@ -57,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
         clsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                scribbleView.setDrawingstate(0);
                 scribbleView.clear();
                 scribbleView.invalidate();
                 Toast toast = Toast.makeText(getBaseContext(), R.string.scribble_cls, Toast.LENGTH_SHORT);
@@ -66,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
         ocrButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                scribbleView.setDrawingstate(0);
                 Toast toast = Toast.makeText(getBaseContext(), R.string.scribble_ocr, Toast.LENGTH_SHORT);
                 toast.show();
                 // runForBitmap("testcase/1a0h.jpg", 28, false);
@@ -78,11 +82,27 @@ public class MainActivity extends AppCompatActivity {
         exchangeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                scribbleView.setDrawingstate(0);
                 Toast toast = Toast.makeText(getBaseContext(), R.string.scribble_exchange, Toast.LENGTH_SHORT);
                 toast.show();
             }
         });
-
+        eraserButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                scribbleView.setDrawingstate(1);
+                Toast toast = Toast.makeText(getBaseContext(), R.string.scribble_exchange, Toast.LENGTH_SHORT);
+                toast.show();
+            }
+        });
+        penButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                scribbleView.setDrawingstate(0);
+                Toast toast = Toast.makeText(getBaseContext(), R.string.scribble_exchange, Toast.LENGTH_SHORT);
+                toast.show();
+            }
+        });
 
     }
 
