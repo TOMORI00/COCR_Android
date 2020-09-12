@@ -66,6 +66,15 @@
             app:fab_colorNormal="@android:color/white"
             app:fab_colorPressed="@color/white_pressed"
             app:fab_icon="@drawable/pen_icon" />
+
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:clickable="true"
+            android:id="@+id/save_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fab_colorNormal="@android:color/white"
+            app:fab_colorPressed="@color/white_pressed"
+            app:fab_icon="@drawable/save_button_image" />
     </com.getbase.floatingactionbutton.FloatingActionsMenu>
 
 

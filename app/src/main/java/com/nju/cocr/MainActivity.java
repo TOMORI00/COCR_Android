@@ -1,12 +1,19 @@
 package com.nju.cocr;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.View;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.nju.cocr.dnn.Detector;
@@ -15,15 +22,17 @@ import com.nju.cocr.dnn.Recognition;
 import com.nju.cocr.dnn.Utils;
 import com.nju.cocr.view.ScribbleView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     static final String TAG = "MainActivity";
     ScribbleView scribbleView;
-    FloatingActionButton clsButton, ocrButton, exchangeButton, eraserButton, penButton;
+    FloatingActionButton clsButton, ocrButton, exchangeButton, eraserButton, penButton, saveButton;
     FloatingActionsMenu menuButton;
     Context ctx;
     DetectorInterface detector;
+    String[] needPermission = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
     void runForBitmap(final String filename, int trueNum, boolean showDetails) {
         Bitmap image = Utils.readBitmapFromAssets(ctx.getAssets(), filename);
         long start = System.currentTimeMillis();
@@ -47,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
         exchangeButton = findViewById(R.id.exchange_button);
         eraserButton = findViewById(R.id.eraser_button);
         penButton = findViewById(R.id.pen_button);
+        saveButton = findViewById(R.id.save_button);
 
         ctx=getBaseContext();
         detector = Detector.getInstance();
@@ -103,7 +113,28 @@ public class MainActivity extends AppCompatActivity {
                 toast.show();
             }
         });
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(Build.VERSION.SDK_INT<29 && ContextCompat.checkSelfPermission(MainActivity.this
+                        ,Manifest.permission.WRITE_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED){
+                    requestPermissions(needPermission, 1);
+                }else {
+                    savePhoto();
+                }
+            }
 
+        });
+    }
+
+
+    private void savePhoto(){
+        Bitmap bitmap = scribbleView.viewConversionBitmap(scribbleView);
+        if(MediaStore.Images.Media.insertImage(getContentResolver(),bitmap,"","")==null){
+            Toast.makeText(MainActivity.this,"fail",Toast.LENGTH_SHORT).show();
+        }else {
+        Toast.makeText(MainActivity.this,"success",Toast.LENGTH_SHORT).show();
+    }
     }
 
 

@@ -1,6 +1,7 @@
 package com.nju.cocr.view;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -213,6 +214,25 @@ public class ScribbleView extends View {
         }
         }
         return true;
+    }
+
+    /**
+     * view转bitmap
+     */
+    public Bitmap viewConversionBitmap(View v) {
+        int w = v.getWidth();
+        int h = v.getHeight();
+
+        Bitmap bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(bmp);
+
+        c.drawColor(Color.WHITE);
+        /** 如果不设置canvas画布为白色，则生成透明 */
+
+        v.layout(0, 0, w, h);
+        v.draw(c);
+
+        return bmp;
     }
 
     private double getRotation(MotionEvent event) {
