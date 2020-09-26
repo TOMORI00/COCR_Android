@@ -2,6 +2,7 @@ package com.nju.cocr.structure;
 
 import android.graphics.PointF;
 import android.graphics.RectF;
+
 import com.nju.cocr.dnn.Recognition;
 
 import java.util.ArrayList;
@@ -11,9 +12,9 @@ import static com.nju.cocr.structure.Utils.getDistance;
 
 /**
  * 结构综合算法类
- * 1. 将所有的隐式碳原子找出，添加至atoms
- * 2、检查每个原子和所有键两端的距离，小于阈值，分配原子到键端
- * 3、没有被分配到原子的键端看作边缘没写出符号的碳原子，分配原子到键端
+ * 1. 检查每个原子和所有键两端的距离，小于阈值，分配原子到键端（显式关系添加）
+ * 2、将所有的隐式碳原子找出，添加至atoms,显式关系添加
+ * 3、没有被分配到原子的键端看作边缘没写出符号的碳原子，分配原子到键端（显示关系添加）
  */
 public class Synthesizer {
     /**
@@ -34,6 +35,10 @@ public class Synthesizer {
     private double atomAvgWidth;
 
     public Synthesizer(List<Recognition> recognitions, List<Direction> directions) {
+        atoms = new ArrayList<>();
+        bonds = new ArrayList<>();
+        cons = new ArrayList<>();
+
         for (Recognition r : recognitions) {
             //化学键的情况
             //用于记录有多少键，方便directions通过下标访问
@@ -102,8 +107,8 @@ public class Synthesizer {
      * 寻找显式原子连接关系
      */
     public void checkExplicitAtom() {
-        //阈值设置为平均原子长度的一半*1.45，略大于根号2
-        double threshold = atomAvgWidth / 2 * 1.45;
+        //阈值设置为平均原子长度
+        double threshold = atomAvgWidth;
         for (int i = 0; i < bonds.size(); i++) {
             for (int j = 0; j < atoms.size(); j++) {
                 PointF startPoint = bonds.get(i).getStartPoint();
@@ -136,6 +141,37 @@ public class Synthesizer {
                 }
             }
         }
+        //二次验证
+        //对于没有分配到原子的键，阈值直接变大1.5倍，再去判断
+        for (int i = 0; i < bonds.size(); i++) {
+            threshold = atomAvgWidth;
+            if (cons.get(i).get(0) != null || cons.get(i).get(1) != null) {
+                continue;
+            }
+            while (cons.get(i).get(0) == null && cons.get(i).get(1) == null) {
+                threshold *= 1.25;
+                for (int j = 0; j < atoms.size(); j++) {
+                    PointF startPoint = bonds.get(i).getStartPoint();
+                    PointF endPoint = bonds.get(i).getEndPoint();
+                    double atomToStartPoint = getDistance(startPoint, new PointF(atoms.get(j).getRect().centerX(), atoms.get(j).getRect().centerY()));
+                    double atomToEndPoint = getDistance(endPoint, new PointF(atoms.get(j).getRect().centerX(), atoms.get(j).getRect().centerY()));
+                    //如果原子中心到键的start端距离小于阈值
+                    if (atomToStartPoint < threshold && atomToStartPoint < atomToEndPoint) {
+                        //如果此键的start端没有连原子
+                        cons.get(i).set(0, atoms.get(j));
+                        //如果此键的start的端连有的原子比现在的这个远，说明原本的连接是错误的
+                    }
+                    //如果原子中心到键的end端距离小于阈值
+                    if (atomToEndPoint < threshold && atomToEndPoint < atomToStartPoint) {
+                        //键的end端与此原子建立连接关系
+                        cons.get(i).set(1, atoms.get(j));
+                    }
+
+                }
+            }
+        }
+
+        //对角线判断，如果夹住直接分配（此处考虑大一点的阈值）
     }
 
     /**
@@ -153,10 +189,7 @@ public class Synthesizer {
         return sum / num;
     }
 
-    /**
-     * 寻找所有隐式碳原子,将其添加到所有atoms中去
-     * 判断两个化学键端点之间的距离，小于阈值就判定为拥有隐式碳原子，去重
-     */
+
     public void findHiddenCarbon() {
         //阈值设置为平均原子宽度的一半，用于判断两个键是否连接
         double threshold = atomAvgWidth / 2;
@@ -227,4 +260,19 @@ public class Synthesizer {
         }
     }
 
+    public List<Atom> getAtoms() {
+        return atoms;
+    }
+
+    public List<Bond> getBonds() {
+        return bonds;
+    }
+
+    public List<List<Atom>> getCons() {
+        return cons;
+    }
+
+    public double getAtomAvgWidth() {
+        return atomAvgWidth;
+    }
 }

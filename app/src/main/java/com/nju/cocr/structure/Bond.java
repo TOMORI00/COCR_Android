@@ -35,4 +35,14 @@ public class Bond {
     public PointF getEndPoint() {
         return endPoint;
     }
+
+    @Override
+    public String toString() {
+        return "Bond{" +
+                "id=" + id +
+                ", rect=" + rect +
+                ", startPoint=" + startPoint +
+                ", endPoint=" + endPoint +
+                '}';
+    }
 }

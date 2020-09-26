@@ -21,4 +21,11 @@ public class Atom {
         return rect;
     }
 
+    @Override
+    public String toString() {
+        return "Atom{" +
+                "id=" + id +
+                ", rect=" + rect +
+                '}';
+    }
 }

@@ -1,7 +1,6 @@
 package com.nju.cocr.structure;
 
 import android.content.Context;
-
 import android.graphics.Bitmap;
 import android.graphics.PointF;
 import android.graphics.RectF;
@@ -9,7 +8,6 @@ import android.util.Log;
 
 import androidx.test.core.app.ApplicationProvider;
 
-import com.nju.cocr.R;
 import com.nju.cocr.dnn.Detector;
 import com.nju.cocr.dnn.DetectorInterface;
 import com.nju.cocr.dnn.Recognition;
@@ -19,7 +17,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +28,7 @@ import static org.junit.Assert.assertEquals;
 
 public class endPointDetectorTest {
     DetectorInterface detector;
-    List<List<PointF>> nHeptane;// 正庚烷的笔迹
+    List<List<PointF>> testCase_script;// 测试用例的笔迹
     Context ctx;
 
     @Before
@@ -40,70 +40,81 @@ public class endPointDetectorTest {
         detector.setIOUThresh(0.3f);
         ctx = ApplicationProvider.getApplicationContext();
         detector.initialize(ctx.getAssets());
-        nHeptane = new ArrayList<List<PointF>>() {{
-            add(new ArrayList<PointF>() {{
-                add(new PointF(0, 1));
-                add(new PointF(1.73f, 0));
-            }});
-            add(new ArrayList<PointF>() {{
-                add(new PointF(1.73f, 0));
-                add(new PointF(3.46f, 1));
-            }});
-            add(new ArrayList<PointF>() {{
-                add(new PointF(3.46f, 1));
-                add(new PointF(5.91f, 0));
-            }});
-            add(new ArrayList<PointF>() {{
-                add(new PointF(0, 1));
-                add(new PointF(-1.73f, 0));
-            }});
-            add(new ArrayList<PointF>() {{
-                add(new PointF(-1.73f, 0));
-                add(new PointF(-3.46f, 1));
-            }});
-            add(new ArrayList<PointF>() {{
-                add(new PointF(-3.46f, 1));
-                add(new PointF(-5.91f, 0));
-            }});
-        }};
+        testCase_script = readTestCase("testcase/testcase1");
+    }
+
+    /**
+     * @param path 文件路径
+     * @return 测试用例的script数据
+     */
+    private List<List<PointF>> readTestCase(String path) {
+        //返回结果
+        List<List<PointF>> result = new ArrayList<>();
+        try {
+            //文件读取
+            InputStream testcase1 = ctx.getAssets().open(path);
+            InputStreamReader read = new InputStreamReader(testcase1);
+            BufferedReader bufferedReader = new BufferedReader(read);
+            String lineTxt = bufferedReader.readLine();
+            //行遍历
+            while (lineTxt != null) {
+                //处理冗余字符
+                lineTxt = lineTxt.substring(8, lineTxt.length() - 3);
+                String[] temp = lineTxt.split("\\), PointF\\(");
+                //原文件中一行的数据
+                List<PointF> lineList = new ArrayList<>();
+                for (String s : temp) {
+                    String[] PointF_string = s.split(", ");
+                    float x = Float.parseFloat(PointF_string[0]);
+                    float y = Float.parseFloat(PointF_string[1]);
+                    lineList.add(new PointF(x, y));
+                }
+                //行并入总结果
+                result.add(lineList);
+                lineTxt = bufferedReader.readLine();
+            }
+            read.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
     @Test
-    public void insertDotTest(){
+    public void insertDotTest() {
         String TAG = "insertDotTest";
-        PointF startPoint = new PointF(1,1);
-        PointF endPoint = new PointF(15,15);
+        PointF startPoint = new PointF(1, 1);
+        PointF endPoint = new PointF(15, 15);
         List<List<PointF>> paths = new ArrayList<>();
         List<PointF> path = new ArrayList<>();
         path.add(startPoint);
         path.add(endPoint);
         paths.add(path);
-        endpointDetector e = new endpointDetector(paths,null);
+        endpointDetector e = new endpointDetector(paths, null);
         List<PointF> result = e.insertDots();
-        Log.d(TAG, "insertDotTest: "+result);
-        assertEquals(11,result.size());
+        Log.d(TAG, "insertDotTest: " + result);
+        assertEquals(11, result.size());
     }
 
     @Test
-    public void detectTest(){
+    public void detectTest() {
         String TAG = "detectTest";
-        Bitmap image = Utils.convertScriptToBitmap(Utils.normalizeScript(nHeptane));
+        Bitmap image = Utils.convertScriptToBitmap(Utils.normalizeScript(testCase_script));
         List<Recognition> objects = detector.getRecognition(image);
+        //保存框
         List<RectF> labels = new ArrayList<>();
-        for(Recognition recognition:objects){
+        for (Recognition recognition : objects) {
             //<=4的时候说明框里面是键
-            if(recognition.getIndex()<=4) {
+            if (recognition.getIndex() <= 4) {
                 labels.add(recognition.getBoundingBox());
             }
         }
-        endpointDetector e = new endpointDetector(nHeptane,labels);
+        endpointDetector e = new endpointDetector(testCase_script, labels);
+        //result为方向
         List<Direction> result = e.detect();
-        for(int i=0;i<objects.size();i++){
-            Log.d(TAG, result.get(i).toString());
-            Log.d(TAG,objects.get(i).toString());
-        }
-
-
+        Log.d(TAG, String.valueOf(objects));
+        Log.d(TAG, String.valueOf(labels));
+        Log.d(TAG, String.valueOf(result));
     }
 
     @After

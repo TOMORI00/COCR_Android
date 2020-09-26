@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 // todo 楔形键from与to区分
 //todo 鲁棒性提升，如果笔画挨得很近，需要做更为详细的阈值判断
+//todo 非单键情况的鲁棒性，具体表现为双键的两个线段不平行
 
 /**
  * 此类用于判断直线的端点位置
