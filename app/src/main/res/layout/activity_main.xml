@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
+
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
+        android:screenOrientation="landscape"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context="com.nju.cocr.MainActivity">
+
     <com.nju.cocr.view.ScribbleView
-            android:id="@+id/scribble_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            android:background="@android:color/white"/>
+        android:id="@+id/scribble_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
 
     <com.getbase.floatingactionbutton.FloatingActionsMenu
         android:id="@+id/menu_button"
@@ -75,6 +78,14 @@
             app:fab_colorNormal="@android:color/white"
             app:fab_colorPressed="@color/white_pressed"
             app:fab_icon="@drawable/save_button_image" />
+
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/line_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fab_colorNormal="@android:color/white"
+            app:fab_colorPressed="@color/white_pressed"
+            app:fab_icon="@drawable/line_icon" />
     </com.getbase.floatingactionbutton.FloatingActionsMenu>
 
 

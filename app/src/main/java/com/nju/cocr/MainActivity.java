@@ -28,7 +28,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     static final String TAG = "MainActivity";
     ScribbleView scribbleView;
-    FloatingActionButton clsButton, ocrButton, exchangeButton, eraserButton, penButton, saveButton;
+    FloatingActionButton clsButton, ocrButton, exchangeButton, eraserButton, penButton, saveButton,lineButton;
     FloatingActionsMenu menuButton;
     Context ctx;
     DetectorInterface detector;
@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         eraserButton = findViewById(R.id.eraser_button);
         penButton = findViewById(R.id.pen_button);
         saveButton = findViewById(R.id.save_button);
+        lineButton = findViewById(R.id.line_button);
 
         ctx=getBaseContext();
         detector = Detector.getInstance();
@@ -124,6 +125,14 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
+        });
+        lineButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                scribbleView.setDrawingstate(2);
+                Toast toast = Toast.makeText(getBaseContext(), R.string.scribble_exchange, Toast.LENGTH_SHORT);
+                toast.show();
+            }
         });
     }
 

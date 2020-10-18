@@ -38,7 +38,7 @@ public class ScribbleView extends View {
     //旋转敏感度，越低需要越小的rotation以触发旋转
     private static double SENSE2 = 0.85;
 
-    //记录当前画笔状态，0为默认画笔，1为橡皮擦
+    //记录当前画笔状态，0为默认画笔，1为橡皮擦，2为直线
     private int drawingstate = 0;
 
     public int getDrawingstate() {
@@ -57,6 +57,11 @@ public class ScribbleView extends View {
     private double era_binY = 0.0;
     private double era_endY = 0.0;
 
+    //记录直线起笔落笔位置
+    private double line_downX = 0.0;
+    private double line_upX = 0.0;
+    private double line_downY = 0.0;
+    private double line_upY = 0.0;
     static {
         paint = new Paint();
         paint.setStrokeCap(Paint.Cap.ROUND);
@@ -172,7 +177,7 @@ public class ScribbleView extends View {
                 break;
         }
         }
-        else {
+        else if(drawingstate==1){
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
                     if (event.getPointerCount() > 1) {
@@ -212,6 +217,35 @@ public class ScribbleView extends View {
                     invalidate();
                     break;
         }
+        }
+        else if(drawingstate==2){
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    if (event.getPointerCount() > 1) {
+                        break;
+                    }
+                    Log.d(TAG, "单指--->down@" + event.getX() + "," + event.getY());
+                    line_downX = event.getX();
+                    line_downY = event.getY();
+
+                    stroke = new Stroke(Color.valueOf(Color.BLACK),
+                            SystemClock.currentThreadTimeMillis());
+                    stroke.add(new PointF(event.getX(), event.getY()), strokeWidth);
+                    script.add(stroke);
+                    // ptsIndex = 0;
+                    // strokeIndex = script.size() - 1;
+                    invalidate();
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                case MotionEvent.ACTION_UP:
+                    Log.d(TAG, "单指--->up@" + event.getX() + "," + event.getY());
+                    line_upX = event.getX();
+                    line_upY = event.getY();
+                    stroke.add(new PointF(event.getX(), event.getY()), strokeWidth);
+                    // ptsIndex = stroke.size() - 1;
+                    invalidate();
+                    break;
+            }
         }
         return true;
     }
@@ -378,6 +412,7 @@ public class ScribbleView extends View {
          * @param canvas
          */
         public void drawBy(Canvas canvas) {
+            if(drawingstate != 2){
             if (data.size() == 0) {
                 return;
             }
@@ -392,8 +427,20 @@ public class ScribbleView extends View {
                 canvas.drawLine(data.get(i).x, data.get(i).y,
                         data.get(i - 1).x, data.get(i - 1).y, paint);
             }
+        }else {
+                if (data.size() == 0) {
+                    return;
+                }
+                paint.setColor(color.toArgb());
+                // 防止size=1时，漏掉一个点
+                paint.setStrokeWidth(widths.get(0));
+                canvas.drawLine(data.get(0).x, data.get(0).y,
+                        data.get(data.size()-1).x, data.get(data.size()-1).y, paint);
+            }
         }
     }
+
+
 
     /**
      * 表示一组笔画的集合
