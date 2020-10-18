@@ -190,11 +190,14 @@ public class Synthesizer {
     }
 
 
+    /**
+     * 找到隐式碳原子
+     */
     public void findHiddenCarbon() {
         //阈值设置为平均原子宽度的一半，用于判断两个键是否连接
         double threshold = atomAvgWidth / 2;
         for (int i = 0; i < bonds.size(); i++) {
-            for (int j = i; j < bonds.size(); j++) {
+            for (int j = i+1; j < bonds.size(); j++) {
                 double b1Start_to_b2Start = Utils.getDistance(bonds.get(i).getStartPoint(), bonds.get(j).getStartPoint());
                 double b1Start_to_b2End = Utils.getDistance(bonds.get(i).getStartPoint(), bonds.get(j).getEndPoint());
                 double b1End_to_b2Start = Utils.getDistance(bonds.get(i).getEndPoint(), bonds.get(j).getStartPoint());
