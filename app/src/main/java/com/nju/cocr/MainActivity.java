@@ -8,7 +8,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.View;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,13 +21,14 @@ import com.nju.cocr.dnn.Recognition;
 import com.nju.cocr.dnn.Utils;
 import com.nju.cocr.view.ScribbleView;
 
-import java.util.ArrayList;
+
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     static final String TAG = "MainActivity";
     ScribbleView scribbleView;
-    FloatingActionButton clsButton, ocrButton, exchangeButton, eraserButton, penButton, saveButton,lineButton;
+
+    FloatingActionButton clsButton, ocrButton, exchangeButton, eraserButton, penButton, saveButton;
     FloatingActionsMenu menuButton;
     Context ctx;
     DetectorInterface detector;
@@ -50,14 +50,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         scribbleView = findViewById(R.id.scribble_view);
+
         menuButton = findViewById(R.id.menu_button);
         clsButton = findViewById(R.id.cls_button);
         ocrButton = findViewById(R.id.ocr_button);
+        //drawQuadToView = findViewById(R.id.drawQuadTo_view);
         exchangeButton = findViewById(R.id.exchange_button);
         eraserButton = findViewById(R.id.eraser_button);
         penButton = findViewById(R.id.pen_button);
         saveButton = findViewById(R.id.save_button);
-        lineButton = findViewById(R.id.line_button);
+        //lineButton = findViewById(R.id.line_button);
 
         ctx=getBaseContext();
         detector = Detector.getInstance();
@@ -80,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
         ocrButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                scribbleView.setDrawingstate(0);
+                scribbleView.setDrawingstate(2);
                 Toast toast = Toast.makeText(getBaseContext(), R.string.scribble_ocr, Toast.LENGTH_SHORT);
                 toast.show();
                 // runForBitmap("testcase/1a0h.jpg", 28, false);
@@ -125,14 +127,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-        });
-        lineButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                scribbleView.setDrawingstate(2);
-                Toast toast = Toast.makeText(getBaseContext(), R.string.scribble_exchange, Toast.LENGTH_SHORT);
-                toast.show();
-            }
         });
     }
 

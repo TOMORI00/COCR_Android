@@ -6,16 +6,29 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
+import android.graphics.RectF;
 import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import androidx.annotation.Nullable;
+import android.graphics.Path;
+
+import com.nju.cocr.dnn.DetectorInterface;
+import com.nju.cocr.dnn.Recognition;
+import com.nju.cocr.structure.Atom;
+import com.nju.cocr.structure.Bond;
+
+
+import com.nju.cocr.structure.Synthesizer;
+
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
+import static com.nju.cocr.dnn.Config.SOSO11_LABELS;
 import static java.lang.Math.*;
 
 public class ScribbleView extends View {
@@ -38,7 +51,7 @@ public class ScribbleView extends View {
     //旋转敏感度，越低需要越小的rotation以触发旋转
     private static double SENSE2 = 0.85;
 
-    //记录当前画笔状态，0为默认画笔，1为橡皮擦，2为直线
+    //记录当前画笔状态，0为默认画笔，1为橡皮擦，2为标准化
     private int drawingstate = 0;
 
     public int getDrawingstate() {
@@ -82,6 +95,20 @@ public class ScribbleView extends View {
 
     // 默认线宽
     float strokeWidth = 16;
+
+    DetectorInterface detector;
+
+    /**
+     * 原子序列
+     **/
+    private List<Atom> atoms ;
+    /**
+     * 化学键序列
+     **/
+    private List<Bond> bonds;
+    /**
+     * 连接关系
+     **/
 
     public ScribbleView(Context context) {
         super(context);
@@ -217,35 +244,8 @@ public class ScribbleView extends View {
                     invalidate();
                     break;
         }
-        }
-        else if(drawingstate==2){
-            switch (event.getActionMasked()) {
-                case MotionEvent.ACTION_DOWN:
-                    if (event.getPointerCount() > 1) {
-                        break;
-                    }
-                    Log.d(TAG, "单指--->down@" + event.getX() + "," + event.getY());
-                    line_downX = event.getX();
-                    line_downY = event.getY();
-
-                    stroke = new Stroke(Color.valueOf(Color.BLACK),
-                            SystemClock.currentThreadTimeMillis());
-                    stroke.add(new PointF(event.getX(), event.getY()), strokeWidth);
-                    script.add(stroke);
-                    // ptsIndex = 0;
-                    // strokeIndex = script.size() - 1;
-                    invalidate();
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                case MotionEvent.ACTION_UP:
-                    Log.d(TAG, "单指--->up@" + event.getX() + "," + event.getY());
-                    line_upX = event.getX();
-                    line_upY = event.getY();
-                    stroke.add(new PointF(event.getX(), event.getY()), strokeWidth);
-                    // ptsIndex = stroke.size() - 1;
-                    invalidate();
-                    break;
-            }
+        }else if (drawingstate==2){
+            invalidate();
         }
         return true;
     }
@@ -432,10 +432,28 @@ public class ScribbleView extends View {
                     return;
                 }
                 paint.setColor(color.toArgb());
-                // 防止size=1时，漏掉一个点
+
+                if(abs(data.get(0).y-data.get(data.size()-1).y)>=3*widths.get(0)){
+                    // 防止size=1时，漏掉一个点
+
+                    paint.setStrokeWidth(widths.get(0));
+                    canvas.drawLine(data.get(0).x, data.get(0).y,
+                            data.get(0).x, data.get(0).y, paint);
                 paint.setStrokeWidth(widths.get(0));
-                canvas.drawLine(data.get(0).x, data.get(0).y,
-                        data.get(data.size()-1).x, data.get(data.size()-1).y, paint);
+                canvas.drawLine(data.get(0).x, data.get(0).y, data.get(data.size()-1).x, data.get(data.size()-1).y, paint);
+                }else {
+                    paint.setColor(Color.BLACK);
+                    paint.setStyle(Paint.Style.STROKE);
+                    RectF oval = new RectF(data.get(0).x-6*widths.get(0), data.get(0).y-6*widths.get(0), data.get(0).x, data.get(0).y);
+
+                    canvas.drawArc(oval,148,240,false,paint);
+                }
+                //双线
+                //canvas.drawLine(data.get(0).x, data.get(0).y,
+                //       data.get(data.size()-1).x, data.get(data.size()-1).y, paint);
+                //canvas.drawLine(data.get(0).x, data.get(0).y-widths.get(0)*2,
+                //       data.get(data.size()-1).x, data.get(data.size()-1).y-widths.get(0)*2, paint);
+                //C
             }
         }
     }
@@ -481,7 +499,7 @@ public class ScribbleView extends View {
             if (data.size() > 0) {
                 data.remove(data.size() - 1);
             }
-        }
+    }
 
         /**
          * 返回所有笔画的集合的深拷贝
@@ -522,9 +540,9 @@ public class ScribbleView extends View {
          * @param canvas
          */
         public void drawBy(Canvas canvas) {
-            for (Stroke s : data) {
-                s.drawBy(canvas);
-            }
+                for (Stroke s : data) {
+                    s.drawBy(canvas);
+                }
         }
     }
 }

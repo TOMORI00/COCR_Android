@@ -20,11 +20,11 @@ public class Synthesizer {
     /**
      * 原子序列
      **/
-    private List<Atom> atoms;
+    public List<Atom> atoms;
     /**
      * 化学键序列
      **/
-    private List<Bond> bonds;
+    public List<Bond> bonds;
     /**
      * 连接关系
      **/
