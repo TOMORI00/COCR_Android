@@ -1,6 +1,6 @@
 package com.nju.cocr.structure;
 
-enum Direction {
+public enum Direction {
 
     //左下到右上
     LeftBottom_RightTop,

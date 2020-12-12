@@ -4,6 +4,8 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.PointF;
+import android.graphics.RectF;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -19,9 +21,18 @@ import com.nju.cocr.dnn.Detector;
 import com.nju.cocr.dnn.DetectorInterface;
 import com.nju.cocr.dnn.Recognition;
 import com.nju.cocr.dnn.Utils;
+import com.nju.cocr.structure.Atom;
+import com.nju.cocr.structure.Bond;
+import com.nju.cocr.structure.Direction;
+import com.nju.cocr.structure.Synthesizer;
+import com.nju.cocr.structure.endpointDetector;
 import com.nju.cocr.view.ScribbleView;
 
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -32,6 +43,11 @@ public class MainActivity extends AppCompatActivity {
     FloatingActionsMenu menuButton;
     Context ctx;
     DetectorInterface detector;
+
+    List<List<PointF>> testCase_script;// 测试用例的笔迹
+    List<Direction> directions;
+    List<Recognition> recognitions;
+
     String[] needPermission = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
     void runForBitmap(final String filename, int trueNum, boolean showDetails) {
         Bitmap image = Utils.readBitmapFromAssets(ctx.getAssets(), filename);
@@ -44,6 +60,37 @@ public class MainActivity extends AppCompatActivity {
         }
         image.recycle();
     }
+
+    Synthesizer synthesizer;
+
+    public List<Atom> getAtoms1() {
+        return atoms1;
+    }
+
+    public List<Bond> getBonds1() {
+        return bonds1;
+    }
+
+    public List<Atom> removeAtoms1() {
+        atoms1 = new ArrayList<>();
+        return atoms1 ;
+    }
+
+    public List<Bond> removeBonds1() {
+        bonds1=new ArrayList<>();
+        return bonds1;
+    }
+    /**
+     * 原子序列
+     **/
+    private List<Atom> atoms1 = new ArrayList<>() ;
+    /**
+     * 化学键序列
+     **/
+    private List<Bond> bonds1=new ArrayList<>();
+    /**
+     * 连接关系
+     **/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +116,9 @@ public class MainActivity extends AppCompatActivity {
         detector.setIOUThresh(0.3f);
         detector.initialize(ctx.getAssets());
 
+
+
+
         clsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -82,14 +132,59 @@ public class MainActivity extends AppCompatActivity {
         ocrButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //testCase_script = readTestCase(scribbleView.getScript().toString()); //todo 改成实际的scripts 不改也没事
+                testCase_script = readTestCase("testcase/testcase1");
+                // 这一步是需要的，要把画的调入内存给模型用
+                Bitmap image = Utils.convertScriptToBitmap(Utils.normalizeScript(testCase_script));
+                //recognitions是模型的产物
+                recognitions = detector.getRecognition(image);
+                //保存框
+                List<RectF> labels = new ArrayList<>();
+                for (Recognition recognition : recognitions) {
+                    //<=4的时候说明框里面是键
+                    if (recognition.getIndex() <= 4) {
+                        labels.add(recognition.getBoundingBox());
+                    }
+                }
+                //直线端点判断
+                endpointDetector e = new endpointDetector(testCase_script, labels);
+                //result为方向
+                directions = e.detect();
+                Synthesizer synthesizer = new Synthesizer(recognitions, directions);
+                synthesizer.checkExplicitAtom();
+                synthesizer.findHiddenCarbon();
+                synthesizer.checkExplicitAtom();
+                synthesizer.addTerminalCarbon();
+                synthesizer.checkExplicitAtom();
+
+                //这些是调用接口
+                //todo 就先用测试用例的数据来做重绘吧，因为模型很不稳定，自己画的估计没用
+                List<Atom> atoms = synthesizer.getAtoms();
+                List<Bond> bonds = synthesizer.getBonds();
+                for (Atom atom : atoms) {
+                    Log.d(TAG, atom.toString());
+                    atoms1.add(atom);
+                }
+                for (Bond bond : bonds) {
+                    Log.d(TAG, bond.toString());
+                    bonds1.add(bond);
+                }
+                //Log.d(TAG, "__________");
+                //for (Atom atom : atoms1) {
+                //   Log.d(TAG, atom.toString());
+                //}
+                //for (Bond bond : bonds1) {
+                //    Log.d(TAG, bond.toString());
+                //}
                 scribbleView.setDrawingstate(2);
+
                 Toast toast = Toast.makeText(getBaseContext(), R.string.scribble_ocr, Toast.LENGTH_SHORT);
                 toast.show();
-                // runForBitmap("testcase/1a0h.jpg", 28, false);
+                //runForBitmap("testcase/1a0h.jpg", 28, false);
                 // runForBitmap("testcase/234d.jpg", 51, false);
-                List<Recognition> objects = detector.getRecognition(scribbleView.getScript());
-                Log.d(TAG,"XGD:"+scribbleView.getScript());
-                Log.d(TAG,"XGD:"+objects.toString());
+                //List<Recognition> objects = detector.getRecognition(scribbleView.getScript());
+                //Log.d(TAG,"XGD:"+scribbleView.getScript());
+                //Log.d(TAG,"XGD:"+objects.toString());
             }
         });
         exchangeButton.setOnClickListener(new View.OnClickListener() {
@@ -175,5 +270,38 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy");
+    }
+
+    private List<List<PointF>> readTestCase(String path) {
+        //返回结果
+        List<List<PointF>> result = new ArrayList<>();
+        try {
+            //文件读取
+            InputStream testcase1 = ctx.getAssets().open(path);
+            InputStreamReader read = new InputStreamReader(testcase1);
+            BufferedReader bufferedReader = new BufferedReader(read);
+            String lineTxt = bufferedReader.readLine();
+            //行遍历
+            while (lineTxt != null) {
+                //处理冗余字符
+                lineTxt = lineTxt.substring(8, lineTxt.length() - 3);
+                String[] temp = lineTxt.split("\\), PointF\\(");
+                //原文件中一行的数据
+                List<PointF> lineList = new ArrayList<>();
+                for (String s : temp) {
+                    String[] PointF_string = s.split(", ");
+                    float x = Float.parseFloat(PointF_string[0]);
+                    float y = Float.parseFloat(PointF_string[1]);
+                    lineList.add(new PointF(x, y));
+                }
+                //行并入总结果
+                result.add(lineList);
+                lineTxt = bufferedReader.readLine();
+            }
+            read.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 }
