@@ -107,8 +107,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 scribbleView.setDrawingstate(2);
-                //testCase_script = readTestCase(); //todo 改成实际的scripts 不改也没事
-                testCase_script = readTestCase("testcase/testcase1");
+                testCase_script = scribbleView.getScript(); //todo 改成实际的scripts 不改也没事
+                //testCase_script = readTestCase("testcase/testcase1");
                 // 这一步是需要的，要把画的调入内存给模型用
                 Bitmap image = Utils.convertScriptToBitmap(Utils.normalizeScript(testCase_script));
                 //recognitions是模型的产物
@@ -143,13 +143,17 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, bond.toString());
                     scribbleView.bonds1.add(bond);
                 }
-                Log.d(TAG, "__________");
-                for (Atom atom : scribbleView.atoms1) {
-                   Log.d(TAG, atom.toString());
+                for(Direction direction : directions){
+                    Log.d(TAG, direction.toString());
+                    scribbleView.directions1.add(direction);
                 }
-                for (Bond bond : scribbleView.bonds1) {
-                    Log.d(TAG, bond.toString());
-                }
+                //Log.d(TAG, "__________");
+                //for (Atom atom : scribbleView.atoms1) {
+                //   Log.d(TAG, atom.toString());
+                //}
+                //for (Bond bond : scribbleView.bonds1) {
+                //    Log.d(TAG, bond.toString());
+                //}
                 Log.d(TAG, "onClick: "+scribbleView.getDrawingstate());
 
                 Toast toast = Toast.makeText(getBaseContext(), R.string.scribble_ocr, Toast.LENGTH_SHORT);

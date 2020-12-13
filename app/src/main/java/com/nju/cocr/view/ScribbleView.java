@@ -20,6 +20,7 @@ import com.nju.cocr.dnn.DetectorInterface;
 import com.nju.cocr.dnn.Recognition;
 import com.nju.cocr.structure.Atom;
 import com.nju.cocr.structure.Bond;
+import com.nju.cocr.structure.Direction;
 import com.nju.cocr.structure.Synthesizer;
 import com.nju.cocr.MainActivity;
 
@@ -108,6 +109,7 @@ public class ScribbleView extends View {
     /**
      * 连接关系
      **/
+    public List<Direction> directions1 = new ArrayList<>();
 
     // 当前正在绘制的笔画
     Stroke stroke;
@@ -372,60 +374,104 @@ public class ScribbleView extends View {
                 script.drawBy(canvas);
                 canvas.restore();
             }else {
-                canvas.save();
                 Log.d(TAG, "draw...");
-                Log.d(TAG, "__________");
-                for (Atom atom : atoms1) {
-                    Log.d(TAG, atom.toString());
-                }
-                for (Bond bond : bonds1) {
-                    Log.d(TAG, bond.toString());
-                }
+                //Log.d(TAG, "__________");
+                //for (Atom atom : atoms1) {
+                //    Log.d(TAG, atom.toString());
+                //}
+                //for (Bond bond : bonds1) {
+                //    Log.d(TAG, bond.toString());
+                //}
                 Log.d(TAG, "onClick: "+getDrawingstate());
                 for (Atom atom : atoms1) {
+                    paint.setTextSize(100);
+                    paint.setFakeBoldText(true);
                     paint.setColor(Color.BLACK);
-                    paint.setStyle(Paint.Style.STROKE);
-                    Log.d(TAG, atom.toString());
+                    //Log.d(TAG, atom.toString());
                     switch (atom.getId()){
                         case 5:
-                            canvas.drawArc(atom.getRect(),148,240,false,paint);
+                            canvas.save();
+                            Log.d(TAG, "__________");
+                            Log.d(TAG, atom.toString());
+                            canvas.drawText("C", atom.getRect().left, atom.getRect().bottom, paint);
+                            //canvas.drawRect(atom.getRect(),paint);
+                            canvas.restore();
                             break;
                         case 6:
+                            canvas.save();
+                            canvas.drawText("H", atom.getRect().left, atom.getRect().bottom, paint);
+                            canvas.restore();
                             break;
                         case 7:
-                            canvas.drawArc(atom.getRect(),148,360,false,paint);
+                            canvas.save();
+                            canvas.drawText("O", atom.getRect().left, atom.getRect().bottom, paint);
+                            canvas.restore();
                             break;
                         case 8:
+                            canvas.save();
+                            canvas.drawText("N", atom.getRect().left, atom.getRect().bottom, paint);
+                            canvas.restore();
                             break;
                         case 9:
+                            canvas.save();
+                            canvas.drawText("P", atom.getRect().left, atom.getRect().bottom, paint);
+                            canvas.restore();
                             break;
                         case 10:
-                            canvas.drawArc(atom.getRect(),148,180,false,paint);
-                            canvas.drawArc(atom.getRect(),328,180,false,paint);
+                            canvas.save();
+                            canvas.drawText("S", atom.getRect().left, atom.getRect().bottom, paint);
+                            canvas.restore();
                             break;
                     }
                 }
+                int size  =bonds1.size();
+                int temp = 0;
                 for (Bond bond : bonds1) {
-                    paint.setStrokeWidth(strokeWidth);
-                    Log.d(TAG, bond.toString());
-                    switch (bond.getId()){
-                        case 1:
-                            canvas.drawLine(bond.getStartPoint().x,bond.getStartPoint().y,bond.getEndPoint().x,bond.getEndPoint().y,paint);
-                            break;
-                        case 2:
-                            canvas.drawLine(bond.getStartPoint().x,bond.getStartPoint().y,bond.getEndPoint().x,bond.getEndPoint().y,paint);
-                            canvas.drawLine(bond.getStartPoint().x,bond.getStartPoint().y-strokeWidth*2,bond.getEndPoint().x,bond.getEndPoint().y-strokeWidth*2,paint);
-                            break;
-                        case 3:
-                            break;
-                        case 4:
-                            break;
-                    }
+                        paint.setStrokeWidth(strokeWidth);
+                        Log.d(TAG, bond.toString());
+                        switch (bond.getId()){
+                            case 1:
+                                if(directions1.get(temp) ==Direction.LeftBottom_RightTop){
+                                    canvas.drawLine(bond.getRect().left, bond.getRect().bottom, bond.getRect().right, bond.getRect().top, paint);
+                                    //canvas.drawRect(bond.getRect(),paint);
+                                    temp++;
+                                }else if(directions1.get(temp)==Direction.LeftTop_RightBottom){
+                                    canvas.drawLine(bond.getRect().left, bond.getRect().top, bond.getRect().right, bond.getRect().bottom, paint);
+                                    //canvas.drawRect(bond.getRect(),paint);
+                                    temp++;
+                                }else {
+                                    canvas.drawLine(bond.getStartPoint().x, bond.getStartPoint().y, bond.getEndPoint().x, bond.getEndPoint().y, paint);
+                                    //canvas.drawRect(bond.getRect(),paint);
+                                    temp++;
+                                }
+                                break;
+                            case 2:
+                                if(directions1.get(temp)==Direction.LeftBottom_RightTop){
+                                    canvas.drawLine(bond.getRect().left, bond.getRect().bottom, bond.getRect().right, bond.getRect().top, paint);
+                                    canvas.drawLine(bond.getRect().left, bond.getRect().bottom-strokeWidth*2, bond.getRect().right, bond.getRect().top-strokeWidth*2, paint);
+                                    temp++;
+                                }else if(directions1.get(temp)==Direction.LeftTop_RightBottom){
+                                    canvas.drawLine(bond.getRect().left, bond.getRect().top, bond.getRect().right, bond.getRect().bottom, paint);
+                                    canvas.drawLine(bond.getRect().left, bond.getRect().top-strokeWidth*2, bond.getRect().right, bond.getRect().bottom-strokeWidth*2, paint);
+                                    temp++;
+                                }else {
+                                    canvas.drawLine(bond.getStartPoint().x, bond.getStartPoint().y, bond.getEndPoint().x, bond.getEndPoint().y, paint);
+                                    canvas.drawLine(bond.getStartPoint().x,bond.getStartPoint().y-strokeWidth*2,bond.getEndPoint().x,bond.getEndPoint().y-strokeWidth*2,paint);
+                                    temp++;
+                                }
+                                break;
+                                //canvas.drawLine(bond.getStartPoint().x,bond.getStartPoint().y-strokeWidth*2,bond.getEndPoint().x,bond.getEndPoint().y-strokeWidth*2,paint);
+                                //break;
+                            case 3:
+                                break;
+                            case 4:
+                                break;
+                        }
+
                 }
                 removeAtoms1();
                 removeBonds1();
                 //drawingstate=0;
-                canvas.restore();
                 //if(abs(data.get(0).y-data.get(data.size()-1).y)>=3*widths.get(0)){
                 // 防止size=1时，漏掉一个点
                 //   paint.setStrokeWidth(widths.get(0));
