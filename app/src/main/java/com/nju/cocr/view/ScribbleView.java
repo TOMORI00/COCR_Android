@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.os.Build;
 import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -79,6 +80,35 @@ public class ScribbleView extends View {
         paint.setStrokeJoin(Paint.Join.ROUND);
     }
 
+    public List<Atom> getAtoms1() {
+        return atoms1;
+    }
+
+    public List<Bond> getBonds1() {
+        return bonds1;
+    }
+
+    public List<Atom> removeAtoms1() {
+        atoms1 = new ArrayList<>();
+        return atoms1 ;
+    }
+
+    public List<Bond> removeBonds1() {
+        bonds1=new ArrayList<>();
+        return bonds1;
+    }
+    /**
+     * 原子序列
+     **/
+    public List<Atom> atoms1 = new ArrayList<>() ;
+    /**
+     * 化学键序列
+     **/
+    public List<Bond> bonds1=new ArrayList<>();
+    /**
+     * 连接关系
+     **/
+
     // 当前正在绘制的笔画
     Stroke stroke;
 
@@ -94,7 +124,7 @@ public class ScribbleView extends View {
     // 默认线宽
     float strokeWidth = 16;
 
-    int checkstate = 0;
+    //int checkstate = 0;
 
     DetectorInterface detector;
     MainActivity mainActivity;
@@ -237,8 +267,13 @@ public class ScribbleView extends View {
         }else if (drawingstate==2){
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
+                    Log.d(TAG, "onClick: "+getDrawingstate());
+                    invalidate();
+                    break;
                 case MotionEvent.ACTION_MOVE:
+                    break;
                 case MotionEvent.ACTION_UP:
+                    break;
         }}
         return true;
     }
@@ -329,15 +364,25 @@ public class ScribbleView extends View {
         super.onDraw(canvas);
         //Log.d(TAG, mainActivity.a);
         Log.d(TAG, "draw...");
-            if (drawingstate != 2&&script != null) {
+            if (drawingstate != 2) {
                 Log.d(TAG, "draw...");
+                Log.d(TAG, "onClick: "+getDrawingstate());
                 canvas.save();
                 // canvas 关联到当前 View，把 script 全部重绘到当前 View
                 script.drawBy(canvas);
                 canvas.restore();
             }else {
+                canvas.save();
                 Log.d(TAG, "draw...");
-                for (Atom atom : mainActivity.getAtoms1()) {
+                Log.d(TAG, "__________");
+                for (Atom atom : atoms1) {
+                    Log.d(TAG, atom.toString());
+                }
+                for (Bond bond : bonds1) {
+                    Log.d(TAG, bond.toString());
+                }
+                Log.d(TAG, "onClick: "+getDrawingstate());
+                for (Atom atom : atoms1) {
                     paint.setColor(Color.BLACK);
                     paint.setStyle(Paint.Style.STROKE);
                     Log.d(TAG, atom.toString());
@@ -360,7 +405,7 @@ public class ScribbleView extends View {
                             break;
                     }
                 }
-                for (Bond bond : mainActivity.getBonds1()) {
+                for (Bond bond : bonds1) {
                     paint.setStrokeWidth(strokeWidth);
                     Log.d(TAG, bond.toString());
                     switch (bond.getId()){
@@ -377,9 +422,10 @@ public class ScribbleView extends View {
                             break;
                     }
                 }
-                mainActivity.removeAtoms1();
-                mainActivity.removeBonds1();
-                drawingstate=0;
+                removeAtoms1();
+                removeBonds1();
+                //drawingstate=0;
+                canvas.restore();
                 //if(abs(data.get(0).y-data.get(data.size()-1).y)>=3*widths.get(0)){
                 // 防止size=1时，漏掉一个点
                 //   paint.setStrokeWidth(widths.get(0));
