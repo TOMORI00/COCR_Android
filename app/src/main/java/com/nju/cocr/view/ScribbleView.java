@@ -235,8 +235,11 @@ public class ScribbleView extends View {
                     break;
         }
         }else if (drawingstate==2){
-            invalidate();
-        }
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                case MotionEvent.ACTION_MOVE:
+                case MotionEvent.ACTION_UP:
+        }}
         return true;
     }
 
@@ -324,13 +327,81 @@ public class ScribbleView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if (script != null) {
-            Log.d(TAG, "draw...");
-            canvas.save();
-            // canvas 关联到当前 View，把 script 全部重绘到当前 View
-            script.drawBy(canvas);
-            canvas.restore();
-        }
+        //Log.d(TAG, mainActivity.a);
+        Log.d(TAG, "draw...");
+            if (drawingstate != 2&&script != null) {
+                Log.d(TAG, "draw...");
+                canvas.save();
+                // canvas 关联到当前 View，把 script 全部重绘到当前 View
+                script.drawBy(canvas);
+                canvas.restore();
+            }else {
+                Log.d(TAG, "draw...");
+                for (Atom atom : mainActivity.getAtoms1()) {
+                    paint.setColor(Color.BLACK);
+                    paint.setStyle(Paint.Style.STROKE);
+                    Log.d(TAG, atom.toString());
+                    switch (atom.getId()){
+                        case 5:
+                            canvas.drawArc(atom.getRect(),148,240,false,paint);
+                            break;
+                        case 6:
+                            break;
+                        case 7:
+                            canvas.drawArc(atom.getRect(),148,360,false,paint);
+                            break;
+                        case 8:
+                            break;
+                        case 9:
+                            break;
+                        case 10:
+                            canvas.drawArc(atom.getRect(),148,180,false,paint);
+                            canvas.drawArc(atom.getRect(),328,180,false,paint);
+                            break;
+                    }
+                }
+                for (Bond bond : mainActivity.getBonds1()) {
+                    paint.setStrokeWidth(strokeWidth);
+                    Log.d(TAG, bond.toString());
+                    switch (bond.getId()){
+                        case 1:
+                            canvas.drawLine(bond.getStartPoint().x,bond.getStartPoint().y,bond.getEndPoint().x,bond.getEndPoint().y,paint);
+                            break;
+                        case 2:
+                            canvas.drawLine(bond.getStartPoint().x,bond.getStartPoint().y,bond.getEndPoint().x,bond.getEndPoint().y,paint);
+                            canvas.drawLine(bond.getStartPoint().x,bond.getStartPoint().y-strokeWidth*2,bond.getEndPoint().x,bond.getEndPoint().y-strokeWidth*2,paint);
+                            break;
+                        case 3:
+                            break;
+                        case 4:
+                            break;
+                    }
+                }
+                mainActivity.removeAtoms1();
+                mainActivity.removeBonds1();
+                drawingstate=0;
+                //if(abs(data.get(0).y-data.get(data.size()-1).y)>=3*widths.get(0)){
+                // 防止size=1时，漏掉一个点
+                //   paint.setStrokeWidth(widths.get(0));
+                //    canvas.drawLine(data.get(0).x, data.get(0).y,
+                //            data.get(0).x, data.get(0).y, paint);
+                // paint.setStrokeWidth(widths.get(0));
+                //canvas.drawLine(data.get(0).x, data.get(0).y, data.get(data.size()-1).x, data.get(data.size()-1).y, paint);
+                //}else {
+                //    paint.setColor(Color.BLACK);
+                //    paint.setStyle(Paint.Style.STROKE);
+                //    RectF oval = new RectF(data.get(0).x-6*widths.get(0), data.get(0).y-6*widths.get(0), data.get(0).x, data.get(0).y);
+
+                //    canvas.drawArc(oval,148,240,false,paint);
+                //}
+                //双线
+                //canvas.drawLine(data.get(0).x, data.get(0).y,
+                //       data.get(data.size()-1).x, data.get(data.size()-1).y, paint);
+                //canvas.drawLine(data.get(0).x, data.get(0).y-widths.get(0)*2,
+                //       data.get(data.size()-1).x, data.get(data.size()-1).y-widths.get(0)*2, paint);
+                //C
+            }
+
     }
 
     /**
@@ -417,72 +488,7 @@ public class ScribbleView extends View {
                 canvas.drawLine(data.get(i).x, data.get(i).y,
                         data.get(i - 1).x, data.get(i - 1).y, paint);
             }
-        }else {
-                paint.setColor(color.toArgb());
-                for (Atom atom : mainActivity.getAtoms1()) {
-                    paint.setColor(Color.BLACK);
-                    paint.setStyle(Paint.Style.STROKE);
-                    Log.d(TAG, atom.toString());
-                    switch (atom.getId()){
-                        case 5:
-                            canvas.drawArc(atom.getRect(),148,240,false,paint);
-                            break;
-                        case 6:
-                            break;
-                        case 7:
-                            canvas.drawArc(atom.getRect(),148,360,false,paint);
-                            break;
-                        case 8:
-                            break;
-                        case 9:
-                            break;
-                        case 10:
-                            canvas.drawArc(atom.getRect(),148,180,false,paint);
-                            canvas.drawArc(atom.getRect(),328,180,false,paint);
-                            break;
-                    }
-                }
-                for (Bond bond : mainActivity.getBonds1()) {
-                    paint.setStrokeWidth(strokeWidth);
-                    Log.d(TAG, bond.toString());
-                    switch (bond.getId()){
-                        case 1:
-                            canvas.drawLine(bond.getStartPoint().x,bond.getStartPoint().y,bond.getEndPoint().x,bond.getEndPoint().y,paint);
-                            break;
-                        case 2:
-                            canvas.drawLine(bond.getStartPoint().x,bond.getStartPoint().y,bond.getEndPoint().x,bond.getEndPoint().y,paint);
-                            canvas.drawLine(bond.getStartPoint().x,bond.getStartPoint().y-strokeWidth*2,bond.getEndPoint().x,bond.getEndPoint().y-strokeWidth*2,paint);
-                            break;
-                        case 3:
-                            break;
-                        case 4:
-                            break;
-                    }
-                }
-                mainActivity.removeAtoms1();
-                mainActivity.removeBonds1();
-                drawingstate=0;
-                //if(abs(data.get(0).y-data.get(data.size()-1).y)>=3*widths.get(0)){
-                    // 防止size=1时，漏掉一个点
-                 //   paint.setStrokeWidth(widths.get(0));
-                //    canvas.drawLine(data.get(0).x, data.get(0).y,
-                //            data.get(0).x, data.get(0).y, paint);
-               // paint.setStrokeWidth(widths.get(0));
-                //canvas.drawLine(data.get(0).x, data.get(0).y, data.get(data.size()-1).x, data.get(data.size()-1).y, paint);
-                //}else {
-                //    paint.setColor(Color.BLACK);
-                //    paint.setStyle(Paint.Style.STROKE);
-                //    RectF oval = new RectF(data.get(0).x-6*widths.get(0), data.get(0).y-6*widths.get(0), data.get(0).x, data.get(0).y);
-
-                //    canvas.drawArc(oval,148,240,false,paint);
-                //}
-                //双线
-                //canvas.drawLine(data.get(0).x, data.get(0).y,
-                //       data.get(data.size()-1).x, data.get(data.size()-1).y, paint);
-                //canvas.drawLine(data.get(0).x, data.get(0).y-widths.get(0)*2,
-                //       data.get(data.size()-1).x, data.get(data.size()-1).y-widths.get(0)*2, paint);
-                //C
-            }
+        }
         }
     }
 
@@ -568,15 +574,9 @@ public class ScribbleView extends View {
          * @param canvas
          */
         public void drawBy(Canvas canvas) {
-            if (drawingstate != 2) {
                 for (Stroke s : data) {
                     s.drawBy(canvas);
                 }
-            }else {
-                while (true){
-                    stroke.drawBy(canvas);
-                }
-            }
         }
     }
 }

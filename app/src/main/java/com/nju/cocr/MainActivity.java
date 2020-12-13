@@ -63,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
 
     Synthesizer synthesizer;
 
+    //public String a = "asdasddsas";
+
     public List<Atom> getAtoms1() {
         return atoms1;
     }
@@ -83,11 +85,11 @@ public class MainActivity extends AppCompatActivity {
     /**
      * 原子序列
      **/
-    private List<Atom> atoms1 = new ArrayList<>() ;
+    public List<Atom> atoms1 = new ArrayList<>() ;
     /**
      * 化学键序列
      **/
-    private List<Bond> bonds1=new ArrayList<>();
+    public List<Bond> bonds1=new ArrayList<>();
     /**
      * 连接关系
      **/
@@ -132,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
         ocrButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //testCase_script = readTestCase(scribbleView.getScript().toString()); //todo 改成实际的scripts 不改也没事
+                //testCase_script = readTestCase(); //todo 改成实际的scripts 不改也没事
                 testCase_script = readTestCase("testcase/testcase1");
                 // 这一步是需要的，要把画的调入内存给模型用
                 Bitmap image = Utils.convertScriptToBitmap(Utils.normalizeScript(testCase_script));
@@ -158,7 +160,6 @@ public class MainActivity extends AppCompatActivity {
                 synthesizer.checkExplicitAtom();
 
                 //这些是调用接口
-                //todo 就先用测试用例的数据来做重绘吧，因为模型很不稳定，自己画的估计没用
                 List<Atom> atoms = synthesizer.getAtoms();
                 List<Bond> bonds = synthesizer.getBonds();
                 for (Atom atom : atoms) {
@@ -169,15 +170,14 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, bond.toString());
                     bonds1.add(bond);
                 }
-                //Log.d(TAG, "__________");
-                //for (Atom atom : atoms1) {
-                //   Log.d(TAG, atom.toString());
-                //}
-                //for (Bond bond : bonds1) {
-                //    Log.d(TAG, bond.toString());
-                //}
+                Log.d(TAG, "__________");
+                for (Atom atom : atoms1) {
+                   Log.d(TAG, atom.toString());
+                }
+                for (Bond bond : bonds1) {
+                    Log.d(TAG, bond.toString());
+                }
                 scribbleView.setDrawingstate(2);
-
                 Toast toast = Toast.makeText(getBaseContext(), R.string.scribble_ocr, Toast.LENGTH_SHORT);
                 toast.show();
                 //runForBitmap("testcase/1a0h.jpg", 28, false);
